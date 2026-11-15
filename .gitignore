@@ -1,2 +1,9 @@
 node_modules
 dist
+
+# Folder dan file asisten AI/pendukung
+.agents/
+.claude/
+AGENTS.md
+CLAUDE.md
+instincts.md
