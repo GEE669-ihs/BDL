@@ -8,7 +8,7 @@ const ONGKIR = 15000
 const GRATIS_ONGKIR = 200000
 
 export default function Checkout() {
-  const { items, cart, total, clear } = useApp()
+  const { items, cart, total, clear, remove } = useApp()
   const navigate = useNavigate()
   const [form, setForm] = useState({ nama: '', wa: '', alamat: '', kota: '', kodepos: '' })
   const [submitted, setSubmitted] = useState(false)
@@ -16,6 +16,10 @@ export default function Checkout() {
 
   const ongkir = total >= GRATIS_ONGKIR ? 0 : ONGKIR
   const grandTotal = total + ongkir
+
+  const handleBack = () => {
+    navigate('/katalog')
+  }
 
   const change = (e) => setForm((f) => ({ ...f, [e.target.name]: e.target.value }))
 
@@ -94,6 +98,21 @@ export default function Checkout() {
   return (
     <div className="stage">
       <section className="block checkout-block">
+        <div className="checkout-top-bar">
+          <button
+            type="button"
+            className="checkout-back-btn"
+            onClick={handleBack}
+            aria-label="Kembali ke Katalog Photocard"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <line x1="19" y1="12" x2="5" y2="12" />
+              <polyline points="12 19 5 12 12 5" />
+            </svg>
+            <span>Kembali ke Katalog</span>
+          </button>
+        </div>
+
         <div className="block-header">
           <h2>Checkout Pesanan CYE</h2>
           <p className="sub">Lengkapi data pengiriman dengan akurat untuk pengiriman photocard resmi Batch 04.</p>
@@ -149,7 +168,21 @@ export default function Checkout() {
                       <span className="item-qty-tag">Jumlah: {cart[c.id]} kartu</span>
                     </div>
                   </div>
-                  <span className="item-total-price">{money(c.price * cart[c.id])}</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span className="item-total-price">{money(c.price * cart[c.id])}</span>
+                    <button
+                      type="button"
+                      className="cart-item-remove-btn"
+                      onClick={() => remove(c.id)}
+                      title={`Hapus ${c.name} dari pesanan`}
+                      aria-label={`Hapus ${c.name}`}
+                    >
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <line x1="18" y1="6" x2="6" y2="18" />
+                        <line x1="6" y1="6" x2="18" y2="18" />
+                      </svg>
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>

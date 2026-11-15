@@ -11,8 +11,8 @@ const NAV = [
     label: 'Beranda',
     icon: (
       <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-        <polyline points="9 22 9 12 15 12 15 22"/>
+        <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+        <polyline points="9 22 9 12 15 12 15 22" />
       </svg>
     ),
   },
@@ -21,22 +21,22 @@ const NAV = [
     label: 'Katalog',
     icon: (
       <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <rect x="3" y="3" width="7" height="9" rx="1"/>
-        <rect x="14" y="3" width="7" height="5" rx="1"/>
-        <rect x="14" y="12" width="7" height="9" rx="1"/>
-        <rect x="3" y="16" width="7" height="5" rx="1"/>
+        <rect x="3" y="3" width="7" height="9" rx="1" />
+        <rect x="14" y="3" width="7" height="5" rx="1" />
+        <rect x="14" y="12" width="7" height="9" rx="1" />
+        <rect x="3" y="16" width="7" height="5" rx="1" />
       </svg>
     ),
   },
   {
     to: '/cara-order',
-    label: 'Cara Order',
+    label: 'Panduan Order',
     icon: (
       <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-        <polyline points="14 2 14 8 20 8"/>
-        <line x1="16" y1="13" x2="8" y2="13"/>
-        <line x1="16" y1="17" x2="8" y2="17"/>
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+        <polyline points="14 2 14 8 20 8" />
+        <line x1="16" y1="13" x2="8" y2="13" />
+        <line x1="16" y1="17" x2="8" y2="17" />
       </svg>
     ),
   },
@@ -45,16 +45,16 @@ const NAV = [
     label: 'FAQ',
     icon: (
       <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <circle cx="12" cy="12" r="10"/>
-        <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
-        <line x1="12" y1="17" x2="12.01" y2="17"/>
+        <circle cx="12" cy="12" r="10" />
+        <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+        <line x1="12" y1="17" x2="12.01" y2="17" />
       </svg>
     ),
   },
 ]
 
 export default function Navbar({ user, onLogout }) {
-  const { items, count, total, cart, cartOpen, setCartOpen, toast, requireAuth } = useApp()
+  const { items, count, total, cart, cartOpen, setCartOpen, toast, requireAuth, remove, clear } = useApp()
   const [scrolled, setScrolled] = useState(false)
   const cartRef = useRef(null)
   const navigate = useNavigate()
@@ -133,8 +133,7 @@ export default function Navbar({ user, onLogout }) {
             onClick={() => navigate('/beranda')}
             aria-label="GO Closerz Beranda"
           >
-            <span className="logo-sparkle" aria-hidden="true">✦</span>
-            <span>GO Closerz</span>
+            <span className="nav-logo-text">GO Closerz</span>
           </button>
 
           {/* Menu Links: Capsule Terpisah & Sliding Motion (Tampil di Desktop & Tablet Landscape) */}
@@ -203,7 +202,23 @@ export default function Navbar({ user, onLogout }) {
             {cartOpen && (
               <div className="cart-dropdown glass-panel">
                 <div className="cart-header">
-                  <span>🛒 Keranjangmu</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <span>🛒 Keranjangmu</span>
+                    {items.length > 0 && (
+                      <button
+                        type="button"
+                        className="cart-clear-all-btn"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          clear()
+                        }}
+                        title="Kosongkan seluruh keranjang"
+                        aria-label="Kosongkan keranjang"
+                      >
+                        Hapus Semua
+                      </button>
+                    )}
+                  </div>
                   <button className="cart-close" onClick={() => setCartOpen(false)} aria-label="Tutup keranjang">✕</button>
                 </div>
 
@@ -235,6 +250,21 @@ export default function Navbar({ user, onLogout }) {
                             <span className="cart-qty">× {cart[c.id]}</span>
                             <span className="cart-price">{money(c.price * cart[c.id])}</span>
                           </div>
+                          <button
+                            type="button"
+                            className="cart-item-remove-btn"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              remove(c.id)
+                            }}
+                            title={`Hapus ${c.name} dari keranjang`}
+                            aria-label={`Hapus ${c.name}`}
+                          >
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                              <line x1="18" y1="6" x2="6" y2="18" />
+                              <line x1="6" y1="6" x2="18" y2="18" />
+                            </svg>
+                          </button>
                         </div>
                       ))}
                     </div>

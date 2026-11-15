@@ -5,6 +5,7 @@ import { AppProvider, useApp } from './context/AppContext'
 import Navbar from './components/Navbar'
 import LoginModal from './components/LoginModal'
 import CelestialAurora from './components/CelestialAurora'
+import WhatsAppAdmin from './components/WhatsAppAdmin'
 import Beranda from './pages/Beranda'
 import Katalog from './pages/Katalog'
 
@@ -15,12 +16,12 @@ const CaraOrder = lazy(() => import('./pages/CaraOrder'))
 const FaqPage = lazy(() => import('./pages/Faq'))
 const Checkout = lazy(() => import('./pages/Checkout'))
 
-function Layout({ children }) {
+function Layout({ children, hideNav }) {
   const { user, logout } = useApp()
   return (
     <>
-      <Navbar user={user} onLogout={logout} />
-      <main>{children}</main>
+      {!hideNav && <Navbar user={user} onLogout={logout} />}
+      <main className={hideNav ? 'main--no-nav' : ''}>{children}</main>
       <LoginModal />
       <footer>
 
@@ -91,7 +92,7 @@ function AppRoutes() {
           path="/checkout"
           element={
             <ProtectedRoute>
-              <Layout>
+              <Layout hideNav>
                 <Checkout />
               </Layout>
             </ProtectedRoute>
@@ -112,6 +113,7 @@ export default function App() {
       <AppProvider>
         <CelestialAurora />
         <AppRoutes />
+        <WhatsAppAdmin />
       </AppProvider>
     </BrowserRouter>
   )

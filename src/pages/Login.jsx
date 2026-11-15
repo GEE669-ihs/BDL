@@ -12,6 +12,7 @@ const Icon = ({ children }) => (
 
 import { HERO_CARDS } from '../data'
 import CardArtwork from '../components/CardArtwork'
+import FlipCard from '../components/FlipCard'
 
 export default function Login({ onLogin }) {
   const navigate = useNavigate()
@@ -30,16 +31,15 @@ export default function Login({ onLogin }) {
 
   const isLogin = mode === 'login'
 
-  // Periksa apakah ada callback dari LINE Login API resmi via query code
+  // Periksa apakah ada callback dari LINE Login API resmi via query code -> Langsung Masuk
   useEffect(() => {
     const code = searchParams.get('code')
     if (code) {
       const emailFromLine = sessionStorage.getItem('gc_line_auth_email') || 'closer.line@line.me'
-      sessionStorage.setItem('gc_pending_email', emailFromLine)
-      sessionStorage.setItem('gc_pending_provider', 'LINE')
-      navigate('/otp', { state: { email: emailFromLine, provider: 'LINE' }, replace: true })
+      onLogin(emailFromLine)
+      navigate('/beranda', { replace: true })
     }
-  }, [searchParams, navigate])
+  }, [searchParams, navigate, onLogin])
 
   const switchTo = (m) => { setMode(m); setErr(''); setNotice('') }
 
@@ -60,7 +60,7 @@ export default function Login({ onLogin }) {
     }
   }
 
-  // Konfirmasi otorisasi LINE -> Lanjut ke Halaman OTP
+  // Konfirmasi otorisasi LINE -> Langsung Masuk
   const handleConfirmLineAuth = (e) => {
     e.preventDefault()
     const targetEmail = lineCustomEmail.trim().toLowerCase()
@@ -69,9 +69,8 @@ export default function Login({ onLogin }) {
       return
     }
     setShowLineModal(false)
-    sessionStorage.setItem('gc_pending_email', targetEmail)
-    sessionStorage.setItem('gc_pending_provider', 'LINE')
-    navigate('/otp', { state: { email: targetEmail, provider: 'LINE' } })
+    onLogin(targetEmail)
+    navigate('/beranda', { replace: true })
   }
 
   const submit = (e) => {
@@ -86,27 +85,21 @@ export default function Login({ onLogin }) {
       if (users[em]) return setErr('Email ini sudah terdaftar. Silakan masuk.')
       users[em] = pass
       localStorage.setItem(USERS_KEY, JSON.stringify(users))
-      // Arahkan ke OTP untuk verifikasi keaslian email pendaftar baru
-      sessionStorage.setItem('gc_pending_email', em)
-      sessionStorage.setItem('gc_pending_provider', 'Email')
-      navigate('/otp', { state: { email: em, provider: 'Email' } })
+      onLogin(em)
+      navigate('/beranda', { replace: true })
       return
-    } else if (users[em] !== pass) {
+    } else {
+      if (users[em] && users[em] !== pass) {
+        return setErr('Kata sandi salah. Silakan coba lagi.')
+      }
+      // Jika pengguna baru memasukkan email & password di tab masuk, simpan dan langsung login
       if (!users[em]) {
         users[em] = pass
         localStorage.setItem(USERS_KEY, JSON.stringify(users))
-        sessionStorage.setItem('gc_pending_email', em)
-        sessionStorage.setItem('gc_pending_provider', 'Email')
-        navigate('/otp', { state: { email: em, provider: 'Email' } })
-        return
       }
-      return setErr('Email atau kata sandi salah.')
+      onLogin(em)
+      navigate('/beranda', { replace: true })
     }
-
-    // Arahkan ke OTP untuk verifikasi email asli sebelum masuk
-    sessionStorage.setItem('gc_pending_email', em)
-    sessionStorage.setItem('gc_pending_provider', 'Email')
-    navigate('/otp', { state: { email: em, provider: 'Email' } })
   }
 
   return (
@@ -198,8 +191,6 @@ export default function Login({ onLogin }) {
                   </button>
                 </p>
                 <p className="login-note">
-                  <Icon><circle cx="12" cy="8" r="4" /><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7" /></Icon>
-                  <span>100% aman untuk Group Order & photocard resmi CYE.</span>
                 </p>
               </div>
             </div>
@@ -209,13 +200,21 @@ export default function Login({ onLogin }) {
         <section className="login-hero" id="login-intro" aria-label="Pengenalan koleksi photocard">
           <h1 className="login-title">A little closer.<span>A lot more you.</span></h1>
           <p className="login-lead">Satu tempat untuk bias dan kartu favoritmu. Masuk dulu, lalu temukan koleksi yang paling kamu.</p>
-          <div className="login-cards" aria-label="Photocard pilihan">
-            <i className="twinkle t1">✦</i><i className="twinkle t2">✦</i><i className="twinkle t3">✦</i>
+          <div className="hero-cards" aria-label="Klik kartu untuk membaliknya">
             {HERO_CARDS.map((c, i) => (
-              <div key={c.name} className={`lc lc${i} collector-card tone-${c.tone}`}>
-                <CardArtwork card={{ ...c, no: c.no }} />
-              </div>
+              <FlipCard
+                key={c.name}
+                card={c}
+                style={{
+                  '--rot': `${c.rot}deg`,
+                  '--x': `${c.x}px`,
+                  '--y': `${c.y}px`,
+                  '--stagger': `${160 + i * 220}ms`,
+                  zIndex: c.zIndex ?? (i + 1),
+                }}
+              />
             ))}
+            <p className="hint">Flip the Photocard</p>
           </div>
         </section>
       </div>
@@ -272,7 +271,7 @@ export default function Login({ onLogin }) {
                   autoFocus
                 />
                 <small className="line-helper-text">
-                  Kode verifikasi OTP 6 digit akan dikirimkan ke email ini.
+                  Email ini akan digunakan untuk notifikasi &amp; konfirmasi slot photocard kamu.
                 </small>
               </div>
             </div>
@@ -283,7 +282,7 @@ export default function Login({ onLogin }) {
                 className="btn-line-capsule btn-modal-confirm"
                 onClick={handleConfirmLineAuth}
               >
-                <span>Izinkan &amp; Lanjut Verifikasi OTP →</span>
+                <span>Izinkan &amp; Masuk Sekarang →</span>
               </button>
               <button
                 type="button"

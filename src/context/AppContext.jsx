@@ -22,6 +22,7 @@ export function AppProvider({ children }) {
   const logout = () => {
     localStorage.removeItem(SESSION_KEY)
     setUser(null)
+    setCart({})
   }
 
   const requireAuth = (reason = 'melanjutkan pembelian') => {

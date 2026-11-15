@@ -7,7 +7,7 @@ export default function FaqPage() {
   return (
     <div className="stage">
       <section className="block" id="faq">
-        <div className="block-header">
+        <div className="block-header block-header--center">
           <h2>Frequently Asked Questions</h2>
           <p className="sub">Pertanyaan seputar keaslian photocard, estimasi pengiriman, dan mekanisme pembayaran Group Order.</p>
         </div>
@@ -16,7 +16,11 @@ export default function FaqPage() {
           {FAQ.map(([q, a], i) => {
             const isOpen = open === i
             return (
-              <div className={`qa ${isOpen ? 'open' : ''}`} key={q}>
+              <div
+                className={`qa ${isOpen ? 'open' : ''}`}
+                key={q}
+                style={{ '--stagger': `${120 + i * 100}ms` }}
+              >
                 <button
                   type="button"
                   aria-expanded={isOpen}
