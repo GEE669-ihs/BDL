@@ -617,7 +617,7 @@ export default function Katalog() {
           {/* Teks biasa warna abu di bagian bawah tampilan (sesuai contoh gambar, tanpa capsule) */}
           {list.length > 0 && (
             <div className="katalog-bottom-hint">
-              <span>Scroll atau swipe untuk melihat photocard yang kamu mau ↓</span>
+              <span>Scroll untuk mencari photocard yang kamu mau ↓</span>
             </div>
           )}
         </div>

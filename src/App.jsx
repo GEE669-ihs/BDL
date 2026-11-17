@@ -47,7 +47,7 @@ function Layout({ children, hideNav }) {
       <LoginModal />
       {!hideNav && (
         <footer>
-          <span>© 2026 GO Closerz · A little closer to your bias.</span>
+          <span>© 2026 GO Closerz · Solusi Group Order Photocard K-Pop Official.</span>
         </footer>
       )}
     </>

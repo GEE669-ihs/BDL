@@ -127,15 +127,15 @@ export const HERO_CARDS = [
 ]
 
 export const STEPS = [
-  ['Pilih kartu CYE', 'Tambahkan photocard member favoritmu ke keranjang sebelum slot habis.'],
-  ['Isi data pembeli', 'Masukkan nama, nomor WhatsApp, dan alamat pengirimanmu.'],
-  ['Bayar DP 50%', 'Transfer sesuai instruksi checkout, lalu konfirmasi ke admin via WhatsApp.'],
-  ['Tunggu & lunasi', 'Pelunasan saat album/photocard tiba di Indonesia (~3-4 minggu setelah PO tutup).'],
+  ['Login akun terlebih dahulu', 'Masuk atau buat akun GO Closerz terlebih dahulu agar pesanan dan koleksi photocard-mu tersimpan dengan aman.'],
+  ['Pilih photocard di katalog', 'Bebas pilih photocard member favoritmu dari band apa pun (CYE, aespa, BABYMONSTER, ILLIT, TREASURE, Hearts2Hearts, &TEAM, THE BOYZ) lalu masukkan ke keranjang.'],
+  ['Bayar DP atau langsung lunas', 'Pilih sistem pembayaran yang fleksibel: kamu bisa bayar DP 50% terlebih dahulu atau langsung pelunasan penuh 100% saat checkout.'],
+  ['Konfirmasi ke WA admin', 'Kirimkan bukti transfer dan rincian pesananmu ke WhatsApp admin resmi GO Closerz untuk verifikasi cepat dan update status pesanan.'],
 ]
 
 export const FAQ = [
-  ['Apakah photocard Close Your Eyes dijamin official?', 'Ya, 100% official dari album debut ETERNALT, Lucky Draw, dan POB resmi UNCORE/YG PLUS.'],
-  ['Bisa batal setelah bayar DP?', 'DP tidak dapat dikembalikan setelah PO ditutup karena pesanan langsung diproses ke distributor Korea.'],
+  ['Apakah photocard di GO Closerz dijamin official?', 'Ya, 100% official dari album resmi, Lucky Draw, Fansign, dan Benefit Pre-Order (POB) asli Korea dari seluruh band K-Pop yang tersedia (CYE, aespa, BABYMONSTER, ILLIT, TREASURE, Hearts2Hearts, &TEAM, THE BOYZ). Kami tidak menjual barang unofficial atau replika.'],
+  ['Bisa batal setelah bayar DP?', 'DP tidak dapat dikembalikan setelah PO ditutup karena pesanan photocard langsung diproses ke distributor resmi di Korea.'],
   ['Berapa ongkir lokal?', 'Flat Rp15.000 se-Indonesia, dan GRATIS ongkir untuk total belanja di atas Rp200.000.'],
   ['Bagaimana jika kartu ada damage saat tiba?', 'Kirim video unboxing tanpa cut maksimal 2×24 jam sejak paket diterima untuk bantuan klaim/retur.'],
 ]

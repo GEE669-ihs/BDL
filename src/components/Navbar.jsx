@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import { NavLink, useNavigate, useLocation } from 'react-router-dom'
 import Ticker from './Ticker'
 import { useApp } from '../context/AppContext'
@@ -56,9 +57,16 @@ const NAV = [
 export default function Navbar({ user, onLogout }) {
   const { items, count, total, cart, cartOpen, setCartOpen, toast, requireAuth, remove, clear } = useApp()
   const [scrolled, setScrolled] = useState(false)
+  const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' && window.innerWidth <= 768)
   const cartRef = useRef(null)
   const navigate = useNavigate()
   const location = useLocation()
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 768)
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
 
   /* Motion glide slider untuk active menu capsule: Hanya mengikuti saat di-hold secara mulus */
   const linkRefs = useRef({})
@@ -138,55 +146,42 @@ export default function Navbar({ user, onLogout }) {
     }
 
     window.addEventListener('pointermove', handlePointerMove, { passive: true })
-    window.addEventListener('pointerup', handlePointerUp)
-    window.addEventListener('pointercancel', handlePointerUp)
+    window.addEventListener('pointerup', handlePointerUp, { passive: true })
+    window.addEventListener('pointercancel', handlePointerUp, { passive: true })
 
     return () => {
       window.removeEventListener('pointermove', handlePointerMove)
       window.removeEventListener('pointerup', handlePointerUp)
       window.removeEventListener('pointercancel', handlePointerUp)
     }
-  }, [isHolding, location.pathname, navigate])
+  }, [isHolding, navigate, location.pathname])
 
-  /* Update koordinat dan ukuran sliding capsule: tetap di menu aktif saat hover biasa, meluncur saat di-hold */
+  /* Perbarui posisi visual gluder capsule saat target aktif atau rute saat ini berubah */
   useEffect(() => {
-    const updateGlide = () => {
-      const active = location.pathname === '/' ? '/beranda' : location.pathname
-      // Kapsul tetap stabil dan tidak bergetar mundur saat dilepas: arahkan langsung ke target
-      const current = isHolding && heldRoute ? heldRoute : (pendingRoute || active)
-      const target = linkRefs.current[current]
-      if (target) {
-        setGlideStyle({
-          transform: `translate3d(${target.offsetLeft}px, ${target.offsetTop}px, 0) scale(${isHolding ? 0.94 : 1})`,
-          width: target.offsetWidth,
-          height: target.offsetHeight,
-          opacity: 1,
-        })
-      } else {
-        // Ketika di halaman non-menu utama (seperti /login atau /otp)
-        setGlideStyle((prev) => ({ ...prev, opacity: 0 }))
-      }
+    const activeRoute = location.pathname === '/' ? '/beranda' : location.pathname
+    const targetRoute = isHolding && heldRoute ? heldRoute : (pendingRoute || activeRoute)
+    const targetEl = linkRefs.current[targetRoute]
+
+    if (targetEl) {
+      const { offsetLeft, offsetTop, offsetWidth, offsetHeight } = targetEl
+      setGlideStyle({
+        transform: `translate3d(${offsetLeft}px, ${offsetTop}px, 0px) scale(${isHolding ? 0.98 : 1})`,
+        width: offsetWidth,
+        height: offsetHeight,
+        opacity: 1,
+      })
+    } else {
+      setGlideStyle((prev) => ({ ...prev, opacity: 0 }))
     }
+  }, [location.pathname, pendingRoute, heldRoute, isHolding])
 
-    // Hitung posisi sekarang & di next animation frame untuk layout paint selesai
-    updateGlide()
-    const raf = requestAnimationFrame(updateGlide)
-
-    window.addEventListener('resize', updateGlide)
-    return () => {
-      cancelAnimationFrame(raf)
-      window.removeEventListener('resize', updateGlide)
-    }
-  }, [location.pathname, heldRoute, isHolding, pendingRoute])
-
-  /* Navbar makin gelap saat di-scroll (RAF throttled untuk scroll 60+ FPS bebas jank) */
+  /* Deteksi Scroll Window untuk Efek Glass Elevasi pada Topbar */
   useEffect(() => {
     let ticking = false
     const onScroll = () => {
       if (!ticking) {
-        requestAnimationFrame(() => {
-          const isScrolled = window.scrollY > 20
-          setScrolled((prev) => (prev !== isScrolled ? isScrolled : prev))
+        window.requestAnimationFrame(() => {
+          setScrolled(window.scrollY > 20)
           ticking = false
         })
         ticking = true
@@ -196,14 +191,15 @@ export default function Navbar({ user, onLogout }) {
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
-  /* Tutup cart saat klik di luar */
+  /* Tutup cart saat klik di luar (khusus desktop) */
   useEffect(() => {
     const handler = (e) => {
+      if (isMobile) return
       if (cartRef.current && !cartRef.current.contains(e.target)) setCartOpen(false)
     }
     document.addEventListener('mousedown', handler)
     return () => document.removeEventListener('mousedown', handler)
-  }, [setCartOpen])
+  }, [setCartOpen, isMobile])
 
   /* Navigasi selalu mengarahkan pengguna ke layar paling atas secara otomatis */
   const handleNavClick = () => {
@@ -214,6 +210,102 @@ export default function Navbar({ user, onLogout }) {
     }
     window.dispatchEvent(new CustomEvent('closerz:scroll-to-top'))
   }
+
+  /* Template Konten Keranjang (Reused untuk Desktop Dropdown & Mobile Portal Sheet) */
+  const renderCartDropdownContent = () => (
+    <div className="cart-dropdown glass-panel">
+      <div className="cart-header">
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <span>🛒 Keranjangmu</span>
+          {items.length > 0 && (
+            <button
+              type="button"
+              className="cart-clear-all-btn"
+              onClick={(e) => {
+                e.stopPropagation()
+                clear()
+              }}
+              title="Kosongkan seluruh keranjang"
+              aria-label="Kosongkan keranjang"
+            >
+              Hapus Semua
+            </button>
+          )}
+        </div>
+        <button className="cart-close" onClick={() => setCartOpen(false)} aria-label="Tutup keranjang">✕</button>
+      </div>
+
+      {items.length === 0 ? (
+        <div className="cart-empty">
+          <span>✦</span>
+          <p>Keranjang masih kosong.</p>
+          <button className="btn-sm" onClick={() => { setCartOpen(false); navigate('/katalog') }}>
+            Lihat Katalog
+          </button>
+        </div>
+      ) : (
+        <>
+          <div className="cart-items">
+            {items.map((c) => (
+              <div key={c.id} className="cart-row">
+                <div className="cart-thumb">
+                  {c.image ? (
+                    <img src={c.image} alt={c.name} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 'inherit' }} />
+                  ) : (
+                    '✦'
+                  )}
+                </div>
+                <div className="cart-info">
+                  <span className="cart-name">{c.name}</span>
+                  <span className="cart-group">{c.group}</span>
+                </div>
+                <div className="cart-price-col">
+                  <span className="cart-qty">× {cart[c.id]}</span>
+                  <span className="cart-price">{money(c.price * cart[c.id])}</span>
+                </div>
+                <button
+                  type="button"
+                  className="cart-item-remove-btn"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    remove(c.id)
+                  }}
+                  title={`Hapus ${c.name} dari keranjang`}
+                  aria-label={`Hapus ${c.name}`}
+                >
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <line x1="18" y1="6" x2="6" y2="18" />
+                    <line x1="6" y1="6" x2="18" y2="18" />
+                  </svg>
+                </button>
+              </div>
+            ))}
+          </div>
+
+          <div className="cart-footer">
+            <div className="cart-total-row">
+              <span>Total</span>
+              <span className="cart-total-price">{money(total)}</span>
+            </div>
+            <button
+              className="cart-checkout-btn"
+              onClick={() => {
+                setCartOpen(false)
+                if (!user) {
+                  requireAuth('melakukan checkout pesanan photocard')
+                  return
+                }
+                navigate('/checkout')
+              }}
+            >
+              <span>Lanjut ke Checkout</span>
+              <span className="cart-checkout-arrow" aria-hidden="true">→</span>
+            </button>
+          </div>
+        </>
+      )}
+    </div>
+  )
 
   return (
     <>
@@ -307,110 +399,8 @@ export default function Navbar({ user, onLogout }) {
               </button>
             )}
 
-            {/* Mobile Backdrop saat Cart Buka */}
-            {cartOpen && (
-              <div
-                className="cart-mobile-backdrop"
-                onClick={() => setCartOpen(false)}
-                aria-hidden="true"
-              />
-            )}
-
-            {/* Cart Dropdown / Mobile Sheet */}
-            {cartOpen && (
-              <div className="cart-dropdown glass-panel">
-                <div className="cart-header">
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <span>🛒 Keranjangmu</span>
-                    {items.length > 0 && (
-                      <button
-                        type="button"
-                        className="cart-clear-all-btn"
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          clear()
-                        }}
-                        title="Kosongkan seluruh keranjang"
-                        aria-label="Kosongkan keranjang"
-                      >
-                        Hapus Semua
-                      </button>
-                    )}
-                  </div>
-                  <button className="cart-close" onClick={() => setCartOpen(false)} aria-label="Tutup keranjang">✕</button>
-                </div>
-
-                {items.length === 0 ? (
-                  <div className="cart-empty">
-                    <span>✦</span>
-                    <p>Keranjang masih kosong.</p>
-                    <button className="btn-sm" onClick={() => { setCartOpen(false); navigate('/katalog') }}>
-                      Lihat Katalog
-                    </button>
-                  </div>
-                ) : (
-                  <>
-                    <div className="cart-items">
-                      {items.map((c) => (
-                        <div key={c.id} className="cart-row">
-                          <div className="cart-thumb">
-                            {c.image ? (
-                              <img src={c.image} alt={c.name} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 'inherit' }} />
-                            ) : (
-                              '✦'
-                            )}
-                          </div>
-                          <div className="cart-info">
-                            <span className="cart-name">{c.name}</span>
-                            <span className="cart-group">{c.group}</span>
-                          </div>
-                          <div className="cart-price-col">
-                            <span className="cart-qty">× {cart[c.id]}</span>
-                            <span className="cart-price">{money(c.price * cart[c.id])}</span>
-                          </div>
-                          <button
-                            type="button"
-                            className="cart-item-remove-btn"
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              remove(c.id)
-                            }}
-                            title={`Hapus ${c.name} dari keranjang`}
-                            aria-label={`Hapus ${c.name}`}
-                          >
-                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                              <line x1="18" y1="6" x2="6" y2="18" />
-                              <line x1="6" y1="6" x2="18" y2="18" />
-                            </svg>
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-
-                    <div className="cart-footer">
-                      <div className="cart-total-row">
-                        <span>Total</span>
-                        <span className="cart-total-price">{money(total)}</span>
-                      </div>
-                      <button
-                        className="cart-checkout-btn"
-                        onClick={() => {
-                          setCartOpen(false)
-                          if (!user) {
-                            requireAuth('melakukan checkout pesanan photocard')
-                            return
-                          }
-                          navigate('/checkout')
-                        }}
-                      >
-                        <span>Lanjut ke Checkout</span>
-                        <span className="cart-checkout-arrow" aria-hidden="true">→</span>
-                      </button>
-                    </div>
-                  </>
-                )}
-              </div>
-            )}
+            {/* Desktop Cart Dropdown */}
+            {cartOpen && !isMobile && renderCartDropdownContent()}
           </div>
 
         </nav>
@@ -425,6 +415,19 @@ export default function Navbar({ user, onLogout }) {
           </div>
         )}
       </header>
+
+      {/* Mobile Cart Bottom Sheet Modal (Di-portal langsung ke document.body agar tidak terpengaruh parent header) */}
+      {cartOpen && isMobile && typeof document !== 'undefined' && createPortal(
+        <aside className="cart-mobile-portal-root">
+          <div
+            className="cart-mobile-backdrop"
+            onClick={() => setCartOpen(false)}
+            aria-hidden="true"
+          />
+          {renderCartDropdownContent()}
+        </aside>,
+        document.body
+      )}
 
       {/* Floating Bottom Nav Dock khusus Layar HP & Tablet Portrait (< 768px) */}
       <nav className="mobile-bottom-dock" aria-label="Navigasi Bawah">

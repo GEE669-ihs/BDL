@@ -1,9 +1,10 @@
 import { useState, useRef } from 'react'
 import CardArtwork from './CardArtwork'
 
-/* ---------- Flip Card dengan Motion Kursor 3D (RAF Throttled 60-120fps, Anti-Glitch Hitbox) ---------- */
+/* ---------- Flip Card dengan Motion Kursor 3D (Desktop) & Anti-Glitch Safe-Z Stacking (Mobile) ---------- */
 export default function FlipCard({ card, style }) {
   const [flipped, setFlipped] = useState(false)
+  const [isFlipping, setIsFlipping] = useState(false)
   const cardRef = useRef(null)
   const tiltRef = useRef(null)
   const rafId = useRef(null)
@@ -12,12 +13,19 @@ export default function FlipCard({ card, style }) {
   const isHovered = useRef(false)
 
   const handleMouseEnter = () => {
+    // Hanya aktifkan 3D cursor tilt pada perangkat mouse desktop
+    if (typeof window !== 'undefined' && !window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
+      return
+    }
     isHovered.current = true
     if (cardRef.current) rectRef.current = cardRef.current.getBoundingClientRect()
   }
 
   const handleMouseMove = (e) => {
     if (!cardRef.current) return
+    if (typeof window !== 'undefined' && !window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
+      return
+    }
     mousePos.current = { x: e.clientX, y: e.clientY }
 
     if (!rafId.current) {
@@ -37,7 +45,7 @@ export default function FlipCard({ card, style }) {
           return
         }
 
-        // Clamp antara 0.0 sampai 1.0 agar saat kursor digeser sangat cepat, nilai tidak melompat liar
+        // Clamp antara 0.0 sampai 1.0 agar tidak melompat liar
         const rawPx = (mousePos.current.x - r.left) / r.width
         const rawPy = (mousePos.current.y - r.top) / r.height
         const px = Math.max(0, Math.min(1, rawPx))
@@ -77,12 +85,28 @@ export default function FlipCard({ card, style }) {
     }
   }
 
+  const handleClick = () => {
+    // Jaga zIndex tetap di atas selama kartu sedang berputar (800ms) agar tidak tertembus atau tertimpa kartu lain
+    setIsFlipping(true)
+    setFlipped((f) => !f)
+    setTimeout(() => {
+      setIsFlipping(false)
+    }, 850)
+  }
+
+  // Hitung z-index dinamis: saat di-flip atau sedang berputar, naikkan layer ke depan (25)
+  const baseZIndex = style?.zIndex ?? 1
+  const activeZIndex = (flipped || isFlipping) ? 25 : baseZIndex
+
   return (
     <button
       ref={cardRef}
-      className={'flip tone-' + card.tone + (flipped ? ' is-flipped' : '')}
-      style={style}
-      onClick={() => setFlipped((f) => !f)}
+      className={'flip tone-' + card.tone + (flipped ? ' is-flipped' : '') + (isFlipping ? ' is-animating' : '')}
+      style={{
+        ...style,
+        zIndex: activeZIndex,
+      }}
+      onClick={handleClick}
       onMouseEnter={handleMouseEnter}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}

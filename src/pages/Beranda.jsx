@@ -564,7 +564,7 @@ export default function Beranda() {
 
             {/* Teks abu-abu di tengah bawah halaman utama beranda */}
             <div className="beranda-bottom-hint">
-              <span>scroll atau swipe untuk memberi review pengalaman belanja kamu</span>
+              <span>scroll untuk membantu rating pengalaman belanja closerz</span>
             </div>
           </div>
         )}
@@ -786,7 +786,7 @@ export default function Beranda() {
               {/* Teks Biasa Warna Abu di Bawah (Kapsul Dihapus Sesuai Permintaan) */}
               <div className="reviews-action-menu">
                 <p className="reviews-scroll-hint">
-                  Scroll atau swipe ke bawah untuk melihat ulasan lainnya ↓
+                  Scroll untuk melihat ulasan lainnya ↓
                 </p>
               </div>
             </section>
@@ -848,7 +848,7 @@ export default function Beranda() {
               <div className="reviews-action-menu">
                 {activeStage < maxStage ? (
                   <p className="reviews-scroll-hint">
-                    Scroll atau swipe ke bawah untuk melihat ulasan berikutnya ↓
+                    Scroll untuk melihat ulasan berikutnya ↓
                   </p>
                 ) : (
                   <p className="reviews-scroll-hint">

@@ -1095,13 +1095,18 @@ h1 span {
   position: absolute;
   inset: 0;
   transform-style: preserve-3d;
+  -webkit-transform-style: preserve-3d;
   transition: transform .8s cubic-bezier(.2, .8, .2, 1);
   pointer-events: auto;
 }
 .is-flipped .flip-inner {
   transform: rotateY(180deg);
 }
-.face{position:absolute;inset:0;border-radius:24px;backface-visibility:hidden;-webkit-backface-visibility:hidden;display:flex;flex-direction:column;justify-content:flex-end;padding:22px 20px;text-align:left;font-family:var(--card-body);border:1px solid rgba(255,255,255,.6);box-shadow:0 24px 44px rgba(31,24,120,.35)}
+.flip.is-flipped,
+.flip.is-animating {
+  z-index: 25 !important;
+}
+.face{position:absolute;inset:0;border-radius:24px;backface-visibility:hidden;-webkit-backface-visibility:hidden;transform:translate3d(0,0,0.1px);-webkit-transform:translate3d(0,0,0.1px);display:flex;flex-direction:column;justify-content:flex-end;padding:22px 20px;text-align:left;font-family:var(--card-body);border:1px solid rgba(255,255,255,.6);box-shadow:0 24px 44px rgba(31,24,120,.35)}
 .face b{font:800 28px var(--card-display)}
 .face small{font:400 15px var(--card-body);opacity:.85}
 .collector-card{position:relative;display:flex;flex-direction:column;justify-content:flex-end;overflow:hidden;font-family:var(--card-body);border:1px solid rgba(255,255,255,.52);box-shadow:0 26px 50px rgba(10,6,50,.38)}
@@ -1220,11 +1225,28 @@ h1 span {
   color:var(--sky);
   text-shadow:0 1px 4px rgba(0,0,0,0.7);
 }
-.back{transform:rotateY(180deg)}
-.face.back.collector-card{padding:18px;border:1px solid rgba(255,255,255,.52);box-shadow:0 26px 50px rgba(10,6,50,.38)}
-.back-design{position:absolute;inset:16px;border:1px solid rgba(255,255,255,.42);border-radius:15px;display:grid;place-items:center;overflow:hidden}
-.back-design::before{content:'';width:38%;aspect-ratio:1;border:1px solid rgba(255,255,255,.7);border-radius:32% 68% 50% 50%;rotate:45deg;box-shadow:0 0 32px rgba(255,255,255,.22),inset 0 0 18px rgba(255,255,255,.16)}
-.back-design::after{content:'';position:absolute;width:72%;aspect-ratio:1;border:1px solid rgba(255,255,255,.22);border-radius:50%;box-shadow:0 0 0 12px rgba(255,255,255,.035),0 0 0 28px rgba(255,255,255,.025)}
+.back{transform:rotateY(180deg) translate3d(0,0,0.1px);-webkit-transform:rotateY(180deg) translate3d(0,0,0.1px)}
+.face.back.collector-card{
+  padding:18px;
+  border:1px solid rgba(255,255,255,.55);
+  box-shadow:0 26px 50px rgba(10,6,50,.38);
+  background-image:url('./assets/card-back.svg') !important;
+  background-size:cover !important;
+  background-position:center !important;
+  background-repeat:no-repeat !important;
+}
+.back-design{
+  position:absolute;
+  inset:14px;
+  border:1px solid rgba(255,255,255,.32);
+  border-radius:16px;
+  display:grid;
+  place-items:center;
+  overflow:hidden;
+  pointer-events:none;
+}
+.back-design::before{content:'';width:32%;aspect-ratio:1;border:1px solid rgba(255,255,255,.45);border-radius:32% 68% 50% 50%;rotate:45deg;box-shadow:0 0 28px rgba(255,255,255,.18),inset 0 0 14px rgba(255,255,255,.12)}
+.back-design::after{content:'';position:absolute;width:65%;aspect-ratio:1;border:1px solid rgba(255,255,255,.18);border-radius:50%;box-shadow:0 0 0 10px rgba(255,255,255,.025)}
 .spark{position:absolute;top:12px;right:14px;font-size:14px}
 .front .spark{top:20px;right:22px;font-size:20px}
 .hint{position:absolute;bottom:4px;font-size:13px!important;margin:0!important;opacity:.85}
@@ -3541,21 +3563,26 @@ body:has(.beranda-stage-viewport) footer {
 }
 
 @media (max-width: 480px) {
-  /* Stage 0: Hero Phone Super Fluid */
+  /* Stage 0: Hero Phone Super Fluid - Geser teks dan kartu sedikit ke atas agar teks petunjuk abu-abu tampak jelas */
+  .beranda-stage-pane--hero {
+    justify-content: flex-start !important;
+    padding-top: 10px !important;
+    padding-bottom: calc(84px + env(safe-area-inset-bottom, 0px)) !important;
+  }
   .beranda-stage-pane--hero .hero {
-    padding: 4px var(--pad) 10px;
-    gap: 8px;
+    padding: 2px var(--pad) 4px;
+    gap: 6px;
   }
   .beranda-stage-pane--hero h1 {
     font-size: clamp(21px, 6.8vw, 28px);
   }
   .beranda-stage-pane--hero .hero-subtext {
     font-size: 11px;
-    margin: 4px auto 8px;
+    margin: 4px auto 6px;
   }
   .beranda-stage-pane--hero .hero-countdown-label {
     font-size: 11px;
-    margin: 8px auto 6px;
+    margin: 6px auto 4px;
     text-align: center;
     width: 100%;
   }
@@ -3564,7 +3591,7 @@ body:has(.beranda-stage-viewport) footer {
     display: flex !important;
     justify-content: center !important;
     align-items: center !important;
-    margin: 0 auto 18px !important;
+    margin: 0 auto 10px !important;
     width: fit-content !important;
   }
   .beranda-stage-pane--hero .unit {
@@ -3574,9 +3601,17 @@ body:has(.beranda-stage-viewport) footer {
     border-radius: 10px;
   }
   .beranda-stage-pane--hero .hero-cards {
-    height: 220px;
-    transform: scale(0.72);
-    margin: 14px auto 0 !important;
+    height: 200px;
+    transform: scale(0.68);
+    transform-origin: top center;
+    margin: 4px auto 0 !important;
+  }
+  .beranda-bottom-hint {
+    bottom: calc(68px + env(safe-area-inset-bottom, 0px)) !important;
+    font-size: 11.5px !important;
+    color: rgba(255, 255, 255, 0.65) !important;
+    z-index: 85;
+    padding: 0 12px;
   }
 
   /* Stage 2: 5 Cards Phone */
@@ -3658,7 +3693,7 @@ body:has(.beranda-stage-viewport) footer {
 }
 @media (max-width: 768px) {
   .wa-float-container {
-    bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+    bottom: calc(90px + env(safe-area-inset-bottom, 0px));
     right: 14px;
   }
   .wa-float-btn {
@@ -4293,6 +4328,80 @@ section[id] { scroll-margin-top: 96px; }
 /* ═══════════════════════════════════════
    LOGIN PAGE (UNIFIED DARK CELESTIAL)
 ═══════════════════════════════════════ */
+/* Tombol Kembali ke Beranda di Halaman Login (Desktop & Mobile) */
+.login-nav-back-btn {
+  position: fixed;
+  top: 18px;
+  left: 24px;
+  z-index: 150;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 30px;
+  padding: 0 11px;
+  border-radius: 99px;
+  background: rgba(14, 18, 36, 0.55);
+  color: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.login-nav-back-btn:hover {
+  background: rgba(14, 18, 36, 0.85);
+  border-color: rgba(110, 231, 245, 0.35);
+  color: var(--sky);
+  box-shadow: 0 4px 18px rgba(110, 231, 245, 0.18);
+  transform: translateX(-2px);
+}
+
+.login-nav-back-btn svg {
+  width: 13px;
+  height: 13px;
+  opacity: 0.8;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.login-nav-back-btn:hover svg {
+  opacity: 1;
+  transform: translateX(-1px);
+}
+
+.login-home-return-wrap {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  justify-content: center;
+}
+
+.login-home-return-link {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 6px 12px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.login-home-return-link:hover {
+  color: var(--sky);
+  background: rgba(255, 255, 255, 0.05);
+}
+
 .login {
   min-height: 100vh;
   position: relative;
@@ -5513,10 +5622,32 @@ section[id] { scroll-margin-top: 96px; }
   }
 
   /* Login & Auth (Khusus Mobile: Dua Halaman Terpisah Yang Tidak Saling Render) */
+  body:has(.login--mobile-staged),
+  html:has(.login--mobile-staged) {
+    overflow: hidden !important;
+    overscroll-behavior: none !important;
+    height: 100dvh;
+  }
   .login.login--mobile-staged {
     height: 100vh;
     height: 100dvh;
     overflow: hidden !important;
+    overscroll-behavior: none !important;
+    touch-action: pan-x pinch-zoom;
+  }
+  .login-nav-back-btn {
+    top: calc(8px + env(safe-area-inset-top, 0px));
+    left: 10px;
+    height: 27px;
+    padding: 0 9px;
+    font-size: 10.5px;
+    gap: 4px;
+    background: rgba(10, 12, 26, 0.75);
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+  .login-nav-back-btn svg {
+    width: 12px;
+    height: 12px;
   }
   .login.login--mobile-staged .login-wrap {
     min-height: 100dvh;
@@ -5526,6 +5657,7 @@ section[id] { scroll-margin-top: 96px; }
     justify-content: center;
     align-items: center;
     padding: 0 !important;
+    overscroll-behavior: none !important;
   }
   .login.login--mobile-staged .login-hero {
     height: 100dvh;
@@ -5533,30 +5665,39 @@ section[id] { scroll-margin-top: 96px; }
     width: 100%;
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: flex-start !important;
     align-items: center;
     text-align: center;
-    padding: 24px 20px 24px;
+    padding: calc(54px + env(safe-area-inset-top, 0px)) 20px calc(24px + env(safe-area-inset-bottom, 0px)) !important;
     box-sizing: border-box;
     border: none;
+    position: relative;
     animation: fadeIn 0.3s ease-out;
   }
   .login.login--mobile-staged .login-hero .login-title {
-    font-size: clamp(22px, 5.8vw, 32px);
-    line-height: 1.12;
+    font-size: clamp(28px, 7.8vw, 36px) !important;
+    line-height: 1.1;
   }
   .login.login--mobile-staged .login-hero .login-lead {
-    font-size: 13px;
+    font-size: 13.5px !important;
     line-height: 1.45;
-    margin-top: 8px;
-    max-width: 290px;
+    margin-top: 10px;
+    max-width: 310px;
     color: rgba(255, 255, 255, 0.72);
   }
   .login.login--mobile-staged .login-hero .hero-cards {
     width: 100%;
     max-width: 310px;
     height: 250px;
-    margin: 12px auto 0;
+    margin: 16px auto 0;
+  }
+  .login.login--mobile-staged .login-scroll-hint {
+    position: absolute !important;
+    bottom: calc(24px + env(safe-area-inset-bottom, 0px)) !important;
+    left: 0;
+    right: 0;
+    margin-top: 0 !important;
+    z-index: 10;
   }
   .login.login--mobile-staged .login-screen {
     height: 100dvh;
@@ -5566,9 +5707,12 @@ section[id] { scroll-margin-top: 96px; }
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    padding: 20px 16px 32px;
+    padding: calc(52px + env(safe-area-inset-top, 0px)) 16px calc(24px + env(safe-area-inset-bottom, 0px));
     box-sizing: border-box;
     animation: fadeIn 0.3s ease-out;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: none !important;
   }
   .login.login--mobile-staged .login-grid {
     display: flex;
@@ -5748,15 +5892,21 @@ section[id] { scroll-margin-top: 96px; }
     border-radius: 99px;
   }
 
-  /* Cart Mobile Bottom Sheet Modal */
+  /* Cart Mobile Portal & Bottom Sheet Modal */
+  .cart-mobile-portal-root {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    pointer-events: auto;
+  }
   .cart-mobile-backdrop {
     display: block;
     position: fixed;
     inset: 0;
-    background: rgba(8, 6, 20, 0.78);
-    z-index: 998;
-    backdrop-filter: blur(4px);
-    -webkit-backdrop-filter: blur(4px);
+    background: rgba(6, 4, 18, 0.78);
+    z-index: 9998;
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
     animation: fadeIn 0.2s ease-out;
   }
   .cart-dropdown {
@@ -5766,27 +5916,70 @@ section[id] { scroll-margin-top: 96px; }
     left: 0 !important;
     right: 0 !important;
     width: 100% !important;
-    max-height: 84vh;
-    border-radius: 28px 28px 0 0;
-    border-left: none;
-    border-right: none;
-    border-bottom: none;
-    box-shadow: 0 -12px 40px rgba(0, 0, 0, 0.65);
-    z-index: 999;
+    max-width: 100% !important;
+    max-height: 85vh !important;
+    max-height: 85dvh !important;
+    display: flex !important;
+    flex-direction: column !important;
+    background: linear-gradient(180deg, #181236 0%, #0d0822 100%) !important;
+    border-radius: 28px 28px 0 0 !important;
+    border-top: 1px solid rgba(125, 203, 255, 0.25) !important;
+    border-left: none !important;
+    border-right: none !important;
+    border-bottom: none !important;
+    box-shadow: 0 -12px 48px rgba(0, 0, 0, 0.8) !important;
+    z-index: 9999 !important;
     animation: sheetSlideUp 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
   }
-  .cart-footer {
-    padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+  .cart-dropdown .cart-header {
+    flex-shrink: 0;
+    padding: 16px 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   }
-  .cart-empty {
-    padding: 44px 20px 48px !important;
+  .cart-dropdown .cart-items {
+    flex: 1 1 auto;
+    max-height: 48vh !important;
+    max-height: 48dvh !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch;
+    padding: 8px 16px !important;
+  }
+  .cart-dropdown .cart-empty {
+    padding: 44px 20px calc(48px + env(safe-area-inset-bottom, 0px)) !important;
     text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
   }
-  .cart-empty .btn-sm {
-    margin-top: 22px !important;
-    padding: 10px 24px !important;
-    font-size: 13px !important;
+  .cart-dropdown .cart-empty span {
+    font-size: 32px;
+    margin-bottom: 12px;
+  }
+  .cart-dropdown .cart-empty p {
+    font-size: 15px;
+    font-weight: 600;
+    margin-bottom: 22px;
+    color: rgba(255, 255, 255, 0.85);
+  }
+  .cart-dropdown .cart-empty .btn-sm {
+    margin-top: 10px !important;
+    padding: 12px 32px !important;
+    font-size: 14px !important;
     font-weight: 700 !important;
+    border-radius: 99px !important;
+    box-shadow: 0 4px 16px rgba(106, 79, 214, 0.5);
+  }
+  .cart-dropdown .cart-footer {
+    flex-shrink: 0;
+    padding: 14px 20px calc(24px + env(safe-area-inset-bottom, 0px)) !important;
+    background: rgba(13, 8, 34, 0.95);
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+  }
+  .cart-dropdown .cart-checkout-btn {
+    height: 50px;
+    font-size: 15px;
+    font-weight: 800;
   }
 
   /* Checkout fields: 16px mencegah iOS Safari auto-zoom */
@@ -5838,7 +6031,10 @@ section[id] { scroll-margin-top: 96px; }
 @media (hover: none) {
   .flip:hover {
     transform: translate(calc(var(--x) * var(--k)), var(--y, 0px)) rotate(var(--rot));
-    z-index: 1;
+  }
+  .flip.is-flipped,
+  .flip.is-animating {
+    z-index: 25 !important;
   }
   .flip:hover .flip-tilt {
     transform: perspective(900px) rotateX(var(--rx)) rotateY(var(--ry));

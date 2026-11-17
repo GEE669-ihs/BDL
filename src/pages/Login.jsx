@@ -87,6 +87,15 @@ export default function Login({ onLogin }) {
       touchStartX.current = e.touches[0].clientX
     }
 
+    const handleTouchMove = (e) => {
+      // Izinkan scroll normal jika berinteraksi di dalam elemen form input/select
+      if (e.target.closest('input, textarea, select')) return
+      // Kunci layar agar tidak mengalami native pull-to-refresh browser mobile
+      if (e.cancelable) {
+        e.preventDefault()
+      }
+    }
+
     const handleTouchEnd = (e) => {
       if (e.target.closest('input, textarea, select, button')) return
       if (stageLockRef.current) return
@@ -107,11 +116,13 @@ export default function Login({ onLogin }) {
 
     window.addEventListener('wheel', handleWheel, { passive: false })
     window.addEventListener('touchstart', handleTouchStart, { passive: true })
+    window.addEventListener('touchmove', handleTouchMove, { passive: false })
     window.addEventListener('touchend', handleTouchEnd, { passive: true })
 
     return () => {
       window.removeEventListener('wheel', handleWheel)
       window.removeEventListener('touchstart', handleTouchStart)
+      window.removeEventListener('touchmove', handleTouchMove)
       window.removeEventListener('touchend', handleTouchEnd)
     }
   }, [isMobile, loginStage])
@@ -211,6 +222,20 @@ export default function Login({ onLogin }) {
 
   return (
     <main className={`login ${isMobile ? 'login--mobile-staged' : ''}`}>
+      {/* Tombol kembali ke Halaman Beranda (dikecilkan agar rapi dan tidak mengganggu tampilan) */}
+      <button
+        type="button"
+        className="login-nav-back-btn"
+        onClick={() => navigate('/beranda')}
+        aria-label="Kembali ke Beranda"
+      >
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <line x1="19" y1="12" x2="5" y2="12" />
+          <polyline points="12 19 5 12 12 5" />
+        </svg>
+        <span>Beranda</span>
+      </button>
+
       <div className="login-wrap">
         {/* HALAMAN 1 (ATAS PADA MOBILE): TAMPILAN TEKS & KARTU PHOTOCARD */}
         {renderHero && (
@@ -219,8 +244,8 @@ export default function Login({ onLogin }) {
             id="login-intro"
             aria-label="Pengenalan koleksi photocard"
           >
-            <h1 className="login-title">A little closer.<span>A lot more you.</span></h1>
-            <p className="login-lead">Satu tempat untuk bias dan kartu favoritmu. Masuk dulu, lalu temukan koleksi yang paling kamu.</p>
+            <h1 className="login-title">Koleksi Photocard<span>Bias Impianmu</span></h1>
+            <p className="login-lead">Masuk atau buat akun untuk mengamankan slot photocard official favoritmu.</p>
             <div className="hero-cards" aria-label="Klik kartu untuk membaliknya">
               {HERO_CARDS.map((c, i) => (
                 <FlipCard
@@ -358,6 +383,15 @@ export default function Login({ onLogin }) {
                       {isLogin ? 'Daftar di sini' : 'Masuk di sini'}
                     </button>
                   </p>
+                  <div className="login-home-return-wrap">
+                    <button
+                      type="button"
+                      className="login-home-return-link"
+                      onClick={() => navigate('/beranda')}
+                    >
+                      ← Kembali ke Beranda
+                    </button>
+                  </div>
                   <p className="login-note">{/*  */}
                   </p>
                 </div>

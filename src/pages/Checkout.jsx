@@ -51,11 +51,17 @@ export default function Checkout() {
       <div className="stage checkout-stage--centered">
         <section className="block checkout-block checkout-block--centered">
           <div className="checkout-empty-state">
-            <span className="empty-icon">🛍️</span>
+            <span className="empty-icon" aria-hidden="true">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
+                <line x1="3" y1="6" x2="21" y2="6" />
+                <path d="M16 10a4 4 0 0 1-8 0" />
+              </svg>
+            </span>
             <h2>Keranjang Masih Kosong</h2>
-            <p className="sub">Kamu belum memilih photocard CYE untuk dimasukkan ke keranjang.</p>
+            <p className="sub">Kamu belum memilih photocard untuk dimasukkan ke keranjang.</p>
             <button className="btn primary" onClick={() => navigate('/katalog')}>
-              Jelajahi Katalog Photocard Sekarang →
+              Jelajahi Katalog Photocard Sekarang
             </button>
           </div>
         </section>
@@ -128,7 +134,7 @@ export default function Checkout() {
         </div>
 
         <div className="block-header">
-          <h2>Checkout Pesanan CYE</h2>
+          <h2>Checkout Pesanan Group Order</h2>
           <p className="sub">Lengkapi data pengiriman dengan akurat untuk pengiriman photocard resmi Batch 04.</p>
         </div>
 
@@ -213,7 +219,7 @@ export default function Checkout() {
                 </span>
               </div>
               {ongkir === 0 ? (
-                <p className="free-ongkir-promo">🎉 Kamu mendapatkan promo Gratis Ongkir untuk order &gt; Rp200.000!</p>
+                <p className="free-ongkir-promo">Kamu mendapatkan promo Gratis Ongkir untuk order &gt; Rp200.000!</p>
               ) : (
                 <p className="free-ongkir-hint">Tambah {money(GRATIS_ONGKIR - total)} lagi untuk gratis ongkir.</p>
               )}
