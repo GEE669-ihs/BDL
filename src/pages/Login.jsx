@@ -85,17 +85,18 @@ export default function Login({ onLogin }) {
       if (users[em]) return setErr('Email ini sudah terdaftar. Silakan masuk.')
       users[em] = pass
       localStorage.setItem(USERS_KEY, JSON.stringify(users))
-      onLogin(em)
-      navigate('/beranda', { replace: true })
+      // Setelah daftar, arahkan user ke form login untuk mengisi nama akun yang didaftarkan
+      setMode('login')
+      setPass('')
+      setNotice('Akun berhasil didaftarkan! Silakan masuk dengan akun yang sudah kamu daftarkan.')
       return
     } else {
-      if (users[em] && users[em] !== pass) {
-        return setErr('Kata sandi salah. Silakan coba lagi.')
-      }
-      // Jika pengguna baru memasukkan email & password di tab masuk, simpan dan langsung login
+      // User tidak bisa masuk apabila email belum terdaftar
       if (!users[em]) {
-        users[em] = pass
-        localStorage.setItem(USERS_KEY, JSON.stringify(users))
+        return setErr('Email belum terdaftar. Silakan buat akun terlebih dahulu.')
+      }
+      if (users[em] !== pass) {
+        return setErr('Kata sandi salah. Silakan periksa kembali.')
       }
       onLogin(em)
       navigate('/beranda', { replace: true })
@@ -111,23 +112,7 @@ export default function Login({ onLogin }) {
               <h2 className="card-title">{isLogin ? 'Welcome back, Closer.' : 'Join the Closerz.'}</h2>
               <p className="card-sub">{isLogin ? 'Masuk untuk mengelola pesanan & koleksi photocard-mu.' : 'Buat akun dalam sekejap untuk mulai berbelanja.'}</p>
 
-              {/* Tombol Capsule LINE Glowing */}
-              <button
-                type="button"
-                className="btn-line-capsule"
-                onClick={handleLineClick}
-                aria-label="Lanjut masuk dengan akun LINE"
-              >
-                <svg className="line-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                  <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
-                </svg>
-                <span>Lanjut dengan LINE</span>
-              </button>
-
-              <div className="login-divider" aria-hidden="true">
-                <span>atau gunakan email</span>
-              </div>
-
+              {/* Form Login / Signup Menggunakan Email */}
               <form onSubmit={submit} noValidate>
                 <label>
                   <span>Email</span>
@@ -183,6 +168,24 @@ export default function Login({ onLogin }) {
                 </button>
               </form>
 
+              {/* Divider Opsi Login Alternatif */}
+              <div className="login-divider" aria-hidden="true">
+                <span>atau gunakan LINE</span>
+              </div>
+
+              {/* Tombol Capsule LINE Glowing */}
+              <button
+                type="button"
+                className="btn-line-capsule"
+                onClick={handleLineClick}
+                aria-label="Lanjut masuk dengan akun LINE"
+              >
+                <svg className="line-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
+                </svg>
+                <span>Lanjut dengan LINE</span>
+              </button>
+
               <div className="login-footer-action">
                 <p className="swap">
                   {isLogin ? 'Belum punya akun?' : 'Sudah punya akun?'}{' '}
@@ -190,7 +193,7 @@ export default function Login({ onLogin }) {
                     {isLogin ? 'Daftar di sini' : 'Masuk di sini'}
                   </button>
                 </p>
-                <p className="login-note">
+                <p className="login-note">{/*  */}
                 </p>
               </div>
             </div>

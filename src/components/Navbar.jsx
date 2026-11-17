@@ -60,23 +60,106 @@ export default function Navbar({ user, onLogout }) {
   const navigate = useNavigate()
   const location = useLocation()
 
-  /* Motion glide slider untuk active menu capsule */
+  /* Motion glide slider untuk active menu capsule: Hanya mengikuti saat di-hold secara mulus */
   const linkRefs = useRef({})
+  const [heldRoute, setHeldRoute] = useState(null)
+  const [pendingRoute, setPendingRoute] = useState(null)
+  const [isHolding, setIsHolding] = useState(false)
+  const [isMounted, setIsMounted] = useState(false)
+  const pointerStartRouteRef = useRef(null)
   const [glideStyle, setGlideStyle] = useState({
-    transform: 'translateX(0px)',
+    transform: 'translate3d(0px, 0px, 0px) scale(1)',
     width: 0,
+    height: 0,
     opacity: 0,
   })
 
-  /* Update koordinat dan ukuran sliding capsule saat rute berganti atau resize */
+  // Tandai sudah terpasang agar tidak ada animasi melayang canggung saat refresh / pertama buka
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
+
+  // Sinkronkan pendingRoute saat route React Router sudah selesai beralih
+  useEffect(() => {
+    if (pendingRoute && (location.pathname === pendingRoute || (location.pathname === '/' && pendingRoute === '/beranda'))) {
+      setPendingRoute(null)
+    }
+  }, [location.pathname, pendingRoute])
+
+  /* Window-level pointer tracking: tracking kursor/jari secara presisi & mulus saat di-hold */
+  useEffect(() => {
+    if (!isHolding) return
+
+    const handlePointerMove = (e) => {
+      for (const { to } of NAV) {
+        const el = linkRefs.current[to]
+        if (el) {
+          const rect = el.getBoundingClientRect()
+          // Rentang horizontal toleran agar transisi antar menu mengalir alami
+          if (e.clientX >= rect.left - 6 && e.clientX <= rect.right + 6) {
+            setHeldRoute((prev) => (prev !== to ? to : prev))
+            break
+          }
+        }
+      }
+    }
+
+    const handlePointerUp = (e) => {
+      let releasedTo = null
+      for (const { to } of NAV) {
+        const el = linkRefs.current[to]
+        if (el) {
+          const rect = el.getBoundingClientRect()
+          // Toleransi area lepas (termasuk buffer atas & bawah 30px)
+          if (
+            e.clientX >= rect.left - 6 &&
+            e.clientX <= rect.right + 6 &&
+            e.clientY >= rect.top - 30 &&
+            e.clientY <= rect.bottom + 30
+          ) {
+            releasedTo = to
+            break
+          }
+        }
+      }
+
+      const active = location.pathname === '/' ? '/beranda' : location.pathname
+      if (releasedTo) {
+        if (releasedTo !== active) {
+          setPendingRoute(releasedTo)
+          handleNavClick()
+          navigate(releasedTo)
+        }
+      }
+
+      setIsHolding(false)
+      setHeldRoute(null)
+      pointerStartRouteRef.current = null
+    }
+
+    window.addEventListener('pointermove', handlePointerMove, { passive: true })
+    window.addEventListener('pointerup', handlePointerUp)
+    window.addEventListener('pointercancel', handlePointerUp)
+
+    return () => {
+      window.removeEventListener('pointermove', handlePointerMove)
+      window.removeEventListener('pointerup', handlePointerUp)
+      window.removeEventListener('pointercancel', handlePointerUp)
+    }
+  }, [isHolding, location.pathname, navigate])
+
+  /* Update koordinat dan ukuran sliding capsule: tetap di menu aktif saat hover biasa, meluncur saat di-hold */
   useEffect(() => {
     const updateGlide = () => {
-      const current = location.pathname === '/' ? '/beranda' : location.pathname
+      const active = location.pathname === '/' ? '/beranda' : location.pathname
+      // Kapsul tetap stabil dan tidak bergetar mundur saat dilepas: arahkan langsung ke target
+      const current = isHolding && heldRoute ? heldRoute : (pendingRoute || active)
       const target = linkRefs.current[current]
       if (target) {
         setGlideStyle({
-          transform: `translateX(${target.offsetLeft}px)`,
+          transform: `translate3d(${target.offsetLeft}px, ${target.offsetTop}px, 0) scale(${isHolding ? 0.94 : 1})`,
           width: target.offsetWidth,
+          height: target.offsetHeight,
           opacity: 1,
         })
       } else {
@@ -94,7 +177,7 @@ export default function Navbar({ user, onLogout }) {
       cancelAnimationFrame(raf)
       window.removeEventListener('resize', updateGlide)
     }
-  }, [location.pathname])
+  }, [location.pathname, heldRoute, isHolding, pendingRoute])
 
   /* Navbar makin gelap saat di-scroll (RAF throttled untuk scroll 60+ FPS bebas jank) */
   useEffect(() => {
@@ -122,6 +205,16 @@ export default function Navbar({ user, onLogout }) {
     return () => document.removeEventListener('mousedown', handler)
   }, [setCartOpen])
 
+  /* Navigasi selalu mengarahkan pengguna ke layar paling atas secara otomatis */
+  const handleNavClick = () => {
+    if (window.scrollY > 0) {
+      window.scrollTo({ top: 0, left: 0, behavior: 'instant' })
+      document.documentElement.scrollTop = 0
+      document.body.scrollTop = 0
+    }
+    window.dispatchEvent(new CustomEvent('closerz:scroll-to-top'))
+  }
+
   return (
     <>
       <header className={`top${scrolled ? ' scrolled' : ''}`}>
@@ -130,18 +223,29 @@ export default function Navbar({ user, onLogout }) {
           {/* Brand Logo di Kiri */}
           <button
             className="nav-logo"
-            onClick={() => navigate('/beranda')}
+            onClick={() => {
+              setPendingRoute('/beranda')
+              handleNavClick()
+              navigate('/beranda')
+            }}
             aria-label="GO Closerz Beranda"
           >
             <span className="nav-logo-text">GO Closerz</span>
           </button>
 
           {/* Menu Links: Capsule Terpisah & Sliding Motion (Tampil di Desktop & Tablet Landscape) */}
-          <div className="nav-links">
-            {/* Active capsule glow yang meluncur mulus */}
+          <div
+            className="nav-links"
+            role="tablist"
+            aria-label="Navigasi Utama"
+          >
+            {/* Active capsule glow yang meluncur mulus HANYA saat di-hold */}
             <span
-              className="nav-active-glide"
-              style={glideStyle}
+              className={`nav-active-glide${isHolding ? ' is-holding' : ''}`}
+              style={{
+                ...glideStyle,
+                transition: isMounted ? undefined : 'none',
+              }}
               aria-hidden="true"
             />
 
@@ -149,10 +253,26 @@ export default function Navbar({ user, onLogout }) {
               <NavLink
                 key={to}
                 to={to}
+                data-nav-to={to}
                 ref={(el) => {
                   if (el) linkRefs.current[to] = el
                 }}
-                className={({ isActive }) => `nav-item${isActive ? ' nav-item--active' : ''}`}
+                onClick={() => {
+                  setPendingRoute(to)
+                  handleNavClick()
+                }}
+                onPointerDown={(e) => {
+                  if (e.button !== 0 && e.pointerType === 'mouse') return
+                  setIsHolding(true)
+                  setHeldRoute(to)
+                  pointerStartRouteRef.current = to
+                }}
+                className={({ isActive }) => {
+                  const active = location.pathname === '/' ? '/beranda' : location.pathname
+                  const current = isHolding && heldRoute ? heldRoute : (pendingRoute || active)
+                  const isCurrent = current === to
+                  return `nav-item${isCurrent ? ' nav-item--active' : ''}`
+                }}
               >
                 <span className="nav-label">{label}</span>
               </NavLink>
@@ -167,7 +287,6 @@ export default function Navbar({ user, onLogout }) {
               onClick={() => setCartOpen((o) => !o)}
               aria-label={`Keranjang, ${count} item`}
             >
-              <span className="cart-icon">🛒</span>
               <span className="cart-btn-text">Keranjang</span>
               {count > 0 && <span className="cart-badge">{count}</span>}
             </button>
@@ -184,7 +303,6 @@ export default function Navbar({ user, onLogout }) {
                 onClick={() => navigate('/login')}
                 aria-label="Masuk ke Akun Closerz"
               >
-                <span className="login-avatar-icon" aria-hidden="true">✦</span>
                 <span className="login-label">Masuk</span>
               </button>
             )}
@@ -314,6 +432,7 @@ export default function Navbar({ user, onLogout }) {
             <NavLink
               key={to}
               to={to}
+              onClick={handleNavClick}
               className={({ isActive }) => `mobile-dock-item${isActive ? ' mobile-dock-item--active' : ''}`}
             >
               <span className="mobile-dock-icon" aria-hidden="true">{icon}</span>
