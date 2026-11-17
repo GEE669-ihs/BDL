@@ -715,21 +715,26 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid var(-
 .cart-total-price { color: var(--pink); font-size: 16px; }
 .cart-checkout-btn {
   width: 100%;
-  height: 46px;
-  border-radius: 12px;
-  background: linear-gradient(135deg, var(--royal), #8b6de8);
-  color: #fff;
-  font-weight: 700;
-  font-size: 14px;
+  height: 48px;
+  border-radius: 99px;
+  background: var(--sky);
+  color: #0c091a;
+  font-weight: 800;
+  font-size: 14.5px;
+  letter-spacing: -0.01em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
   border: 0;
   cursor: pointer;
-  box-shadow: 0 6px 20px rgba(106,79,214,.35);
+  box-shadow: 0 4px 18px rgba(125, 203, 255, 0.45);
   transition: transform .2s, box-shadow .2s, background .2s;
 }
 .cart-checkout-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 10px 28px rgba(106,79,214,.5);
-  background: linear-gradient(135deg, #7b65e8, #9d80f0);
+  box-shadow: 0 8px 24px rgba(125, 203, 255, 0.65);
+  background: #99d8ff;
 }
 
 /* ── Base Mobile Bottom Dock & Backdrop (Hidden on Desktop) ── */
@@ -1392,7 +1397,7 @@ h2 {
   background: linear-gradient(135deg, rgba(28, 20, 68, 0.75) 0%, rgba(18, 12, 46, 0.88) 100%);
   color: #ffffff;
   font-family: var(--body);
-  font-size: 14px;
+  font-size: 16px; /* 16px mencegah auto-zoom paksa pada browser mobile */
   font-weight: 500;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.12);
   backdrop-filter: blur(10px);
@@ -3183,6 +3188,15 @@ body:has(.beranda-stage-viewport) footer {
   .beranda-stage-pane--hero .hero-countdown-label {
     font-size: 11px;
     margin-bottom: 8px;
+    text-align: center;
+    width: 100%;
+  }
+  .beranda-stage-pane--hero .countdown {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0 auto 16px;
+    width: fit-content;
   }
   .beranda-stage-pane--hero .hero-cards {
     height: 280px;
@@ -3540,20 +3554,29 @@ body:has(.beranda-stage-viewport) footer {
     margin: 4px auto 8px;
   }
   .beranda-stage-pane--hero .hero-countdown-label {
-    font-size: 10px;
-    margin-bottom: 4px;
+    font-size: 11px;
+    margin: 8px auto 6px;
+    text-align: center;
+    width: 100%;
   }
   .beranda-stage-pane--hero .countdown {
     gap: 6px;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    margin: 0 auto 18px !important;
+    width: fit-content !important;
   }
   .beranda-stage-pane--hero .unit {
-    max-width: 58px;
+    width: clamp(44px, 11vw, 50px);
+    max-width: 50px;
     padding: 4px 2px 6px;
+    border-radius: 10px;
   }
   .beranda-stage-pane--hero .hero-cards {
     height: 220px;
     transform: scale(0.72);
-    margin: -10px auto -15px;
+    margin: 14px auto 0 !important;
   }
 
   /* Stage 2: 5 Cards Phone */
@@ -5441,11 +5464,16 @@ section[id] { scroll-margin-top: 96px; }
 /* ── 3. Small Phone Screens (<= 600px) ── */
 @media (max-width: 600px) {
   .cart-btn-text {
-    display: none;
+    display: inline-block !important;
+    font-size: 11.5px !important;
+    font-weight: 700 !important;
+    color: #ffffff !important;
   }
   .cart-btn {
-    padding: 0 11px;
-    gap: 4px;
+    padding: 5px 10px !important;
+    gap: 5px !important;
+    height: 34px !important;
+    border-radius: 99px !important;
   }
   .cart-icon {
     font-size: 15px;
@@ -5976,27 +6004,30 @@ body:has(.katalog-stage-viewport) footer {
   margin-bottom: 20px;
 }
 
-/* ── Container Menu Pilihan Band Sejajar Horizontal Tanpa Background Capsule ── */
+/* ── Container Menu Pilihan Band Sejajar Horizontal (Touch Scrollable di Mobile) ── */
 .chips-glide-container {
   position: relative;
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   flex-wrap: nowrap;
-  gap: 4px;
+  gap: 6px;
   background: transparent;
   border: none;
   border-radius: 0;
-  padding: 4px 6px;
+  padding: 4px 16px;
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
   box-shadow: none;
   margin-bottom: 8px;
+  width: 100%;
   max-width: 100%;
   overflow-x: auto;
+  overflow-y: hidden;
   scrollbar-width: none;
   -webkit-overflow-scrolling: touch;
-  touch-action: pan-x pan-y;
+  touch-action: pan-x;
+  scroll-behavior: smooth;
   user-select: none;
   -webkit-user-select: none;
 }
@@ -6092,9 +6123,9 @@ body:has(.katalog-stage-viewport) footer {
   align-items: center;
   justify-content: center;
   height: 38px;
-  padding: 0 14px;
+  padding: 0 16px;
   border-radius: 9999px;
-  border: none;
+  border: 1px solid transparent;
   background: transparent;
   color: rgba(255, 255, 255, 0.72);
   font-size: 13.5px;
@@ -6102,8 +6133,8 @@ body:has(.katalog-stage-viewport) footer {
   cursor: pointer;
   user-select: none;
   -webkit-user-select: none;
-  touch-action: pan-y;
-  transition: color 0.2s ease, opacity 0.2s ease;
+  touch-action: pan-x;
+  transition: all 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
   white-space: nowrap;
   flex-shrink: 0;
 }
@@ -6114,10 +6145,20 @@ body:has(.katalog-stage-viewport) footer {
 }
 
 .chip-glide-btn--active {
-  color: #fff;
-  font-weight: 600;
-  opacity: 1;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6), 0 0 10px rgba(110, 231, 245, 0.45);
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  background: linear-gradient(
+    135deg,
+    rgba(110, 231, 245, 0.32) 0%,
+    rgba(67, 56, 202, 0.75) 100%
+  ) !important;
+  border: 1.5px solid rgba(110, 231, 245, 0.85) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.45),
+    0 4px 14px rgba(0, 0, 0, 0.35),
+    0 0 12px rgba(110, 231, 245, 0.35) !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+  opacity: 1 !important;
 }
 
 .chip-glide-btn--semua {
@@ -6321,34 +6362,36 @@ body:has(.katalog-stage-viewport) footer {
     justify-content: space-between;
   }
   .katalog-row-cards {
-    grid-template-columns: repeat(2, minmax(0, 160px));
-    justify-content: center;
-    gap: 10px;
+    grid-template-columns: repeat(2, minmax(0, 150px)) !important;
+    justify-content: center !important;
+    gap: 12px !important;
   }
   .katalog-row-cards .pcard {
-    max-width: 160px;
-    padding: 6px 6px 8px;
-    border-radius: 16px;
-    background: #000000;
-    border: 1px solid rgba(255, 255, 255, 0.16);
-    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.75);
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
+    width: 100% !important;
+    max-width: 150px !important;
+    padding: 6px 6px 8px !important;
+    border-radius: 18px !important;
+    background: #000000 !important;
+    border: 1.5px solid rgba(255, 255, 255, 0.35) !important;
+    box-shadow: 0 14px 32px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.12) !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
   }
-  /* Bentuk Photocard seperti kartu fisik (proporsi 54:85, melengkung halus, tidak kotak) */
+  /* Bentuk Photocard seperti kartu fisik pada Beranda (proporsi vertikal 55:85, melengkung halus) */
   .katalog-row-cards .pcard .art {
-    aspect-ratio: 54 / 85 !important;
+    aspect-ratio: 55 / 85 !important;
     width: 100% !important;
     height: auto !important;
-    max-height: clamp(135px, 23vh, 165px) !important;
-    border-radius: 12px !important;
+    max-height: 235px !important;
+    border-radius: 14px !important;
     overflow: hidden !important;
-    margin-bottom: 4px;
+    border: 1px solid rgba(255, 255, 255, 0.28) !important;
+    margin-bottom: 5px !important;
   }
   .katalog-row-cards .pcard .art .card-photo {
     object-fit: cover !important;
-    border-radius: 12px !important;
+    border-radius: 14px !important;
   }
   .katalog-row-cards .pcard .pcard-header-block {
     margin-bottom: 3px;

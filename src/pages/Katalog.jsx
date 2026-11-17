@@ -428,6 +428,10 @@ export default function Katalog() {
     setPendingBand(nextFilter)
     setFilter(nextFilter)
     setActiveStage(0)
+    const btn = bandBtnRefs.current[nextFilter]
+    if (btn) {
+      btn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' })
+    }
   }
 
   const handleSearchChange = (val) => {
@@ -556,19 +560,8 @@ export default function Katalog() {
                 role="tablist"
                 aria-label="Filter Band K-Pop"
               >
-                {/* Active capsule glow yang meluncur mulus HANYA saat di-hold */}
-                <span
-                  className={`chips-active-glide${isBandHolding ? ' is-holding' : ''}`}
-                  style={{
-                    ...bandGlideStyle,
-                    transition: isKatalogMounted ? undefined : 'none',
-                  }}
-                  aria-hidden="true"
-                />
-
                 {BAND_MENU.map((g) => {
-                  const activeBand = isBandHolding && heldBand ? heldBand : (pendingBand !== null ? pendingBand : filter)
-                  const isCurrentBand = activeBand === g
+                  const isCurrentBand = filter === g
                   return (
                     <button
                       key={g}
@@ -578,15 +571,8 @@ export default function Katalog() {
                       }}
                       type="button"
                       role="tab"
-                      aria-selected={g === filter}
+                      aria-selected={isCurrentBand}
                       className={`chip-glide-btn ${isCurrentBand ? 'chip-glide-btn--active' : ''}`}
-                      onPointerDown={(e) => {
-                        if (e.button !== 0 && e.pointerType === 'mouse') return
-                        setIsBandHolding(true)
-                        setHeldBand(g)
-                        dragTargetBandRef.current = g
-                        pointerStartBandRef.current = g
-                      }}
                       onClick={() => handleFilterChange(g)}
                     >
                       {g}
@@ -605,7 +591,7 @@ export default function Katalog() {
                 <div
                   className="band-scroll-thumb"
                   style={{
-                    transform: `translateX(${Math.min(100, Math.max(0, (chipsScrollLeft / chipsMaxScroll) * 100)) * 0.88}px)`,
+                    transform: `translateX(${chipsMaxScroll > 0 ? (chipsScrollLeft / chipsMaxScroll) * 92 : 0}px)`,
                   }}
                 />
               </div>

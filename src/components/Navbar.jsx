@@ -403,7 +403,8 @@ export default function Navbar({ user, onLogout }) {
                           navigate('/checkout')
                         }}
                       >
-                        Lanjut ke Checkout →
+                        <span>Lanjut ke Checkout</span>
+                        <span className="cart-checkout-arrow" aria-hidden="true">→</span>
                       </button>
                     </div>
                   </>
