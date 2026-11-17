@@ -3222,7 +3222,7 @@ body:has(.beranda-stage-viewport) footer {
   }
   .beranda-stage-pane--hero .hero-cards {
     height: 280px;
-    margin: 20px auto 0;
+    margin: 32px auto 0;
   }
   .beranda-stage-pane--hero .flip {
     --k: 0.72;
@@ -3604,7 +3604,7 @@ body:has(.beranda-stage-viewport) footer {
     height: 200px;
     transform: scale(0.68);
     transform-origin: top center;
-    margin: 22px auto 0 !important;
+    margin: 36px auto 0 !important;
   }
   .beranda-bottom-hint {
     bottom: calc(90px + env(safe-area-inset-bottom, 0px)) !important;
@@ -3693,7 +3693,7 @@ body:has(.beranda-stage-viewport) footer {
 }
 @media (max-width: 768px) {
   .wa-float-container {
-    bottom: calc(90px + env(safe-area-inset-bottom, 0px));
+    bottom: calc(108px + env(safe-area-inset-bottom, 0px));
     right: 14px;
   }
   .wa-float-btn {
@@ -3892,6 +3892,9 @@ body:has(.beranda-stage-viewport) footer {
 body:has(.main--no-nav) {
   overflow-x: hidden;
   background: #0d0a1c !important;
+  padding-bottom: 0 !important;
+  min-height: 100vh;
+  min-height: 100dvh;
 }
 body:has(.main--no-nav) footer,
 .main--no-nav + footer,
@@ -3901,6 +3904,7 @@ body:has(.main--no-nav) footer,
 @media (max-width: 900px) {
   body:has(.main--no-nav) {
     overflow-y: auto;
+    padding-bottom: 0 !important;
   }
 }
 .main--no-nav {
@@ -3909,9 +3913,11 @@ body:has(.main--no-nav) footer,
   display: flex;
   flex-direction: column;
   justify-content: center;
+  align-items: center;
   background: transparent !important;
   border: none !important;
   box-shadow: none !important;
+  width: 100%;
 }
 .main--no-nav .stage {
   padding: 18px var(--pad);
@@ -4194,7 +4200,10 @@ body:has(.main--no-nav) footer,
   flex-direction: column !important;
   align-items: center !important;
   justify-content: center !important;
-  padding: 24px var(--pad) !important;
+  padding: max(20px, env(safe-area-inset-top, 0px)) var(--pad) max(20px, env(safe-area-inset-bottom, 0px)) !important;
+  margin: 0 !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
   background: transparent !important;
   border: none !important;
   box-shadow: none !important;
@@ -4203,9 +4212,9 @@ body:has(.main--no-nav) footer,
 .main--no-nav:has(.checkout-success-card) .checkout-block,
 .main--no-nav:has(.checkout-empty-state) .checkout-block {
   padding: 0 !important;
-  margin: 0 auto !important;
+  margin: auto !important;
   width: 100% !important;
-  max-width: 600px !important;
+  max-width: 520px !important;
   display: flex !important;
   flex-direction: column !important;
   align-items: center !important;
@@ -4217,14 +4226,15 @@ body:has(.main--no-nav) footer,
 .checkout-empty-state,
 .checkout-success-card {
   text-align: center;
-  max-width: 600px;
+  max-width: 520px;
   width: 100%;
-  margin: 0 auto !important;
+  margin: auto !important;
   background: #000000;
   border: 1px solid rgba(255, 255, 255, 0.18);
   border-radius: 24px;
-  padding: 34px 32px;
+  padding: 34px 28px;
   box-shadow: 0 24px 60px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  box-sizing: border-box;
 }
 .empty-icon {
   font-size: 48px;
@@ -4304,10 +4314,61 @@ body:has(.main--no-nav) footer,
   color: rgba(255, 255, 255, 0.82);
 }
 .success-cta {
-  display: flex;
-  gap: 12px;
-  justify-content: center;
-  flex-wrap: wrap;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 12px !important;
+  width: 100% !important;
+  margin-top: 22px !important;
+}
+.checkout-success-card .success-cta .btn {
+  width: 100% !important;
+  min-height: 52px !important;
+  height: 52px !important;
+  padding: 0 24px !important;
+  font-size: 15px !important;
+  font-weight: 700 !important;
+  border-radius: 9999px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  text-decoration: none !important;
+  box-sizing: border-box !important;
+  letter-spacing: 0.01em !important;
+  transition: transform 0.15s ease, background 0.2s ease, box-shadow 0.2s ease !important;
+  -webkit-tap-highlight-color: transparent;
+  cursor: pointer;
+}
+.checkout-success-card .success-cta .btn svg {
+  width: 20px !important;
+  height: 20px !important;
+  flex-shrink: 0;
+}
+.checkout-success-card .success-cta .wa-btn {
+  background: #25d366 !important;
+  color: #ffffff !important;
+  box-shadow: 0 6px 20px rgba(37, 211, 102, 0.35) !important;
+}
+.checkout-success-card .success-cta .wa-btn:hover {
+  background: #20bd5a !important;
+  box-shadow: 0 8px 24px rgba(37, 211, 102, 0.45) !important;
+  transform: translateY(-1px);
+}
+.checkout-success-card .success-cta .wa-btn:active {
+  transform: scale(0.98);
+}
+.checkout-success-card .success-cta .btn.ghost {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.24) !important;
+  color: #ffffff !important;
+}
+.checkout-success-card .success-cta .btn.ghost:hover {
+  background: rgba(255, 255, 255, 0.14) !important;
+  border-color: rgba(255, 255, 255, 0.4) !important;
+  transform: translateY(-1px);
+}
+.checkout-success-card .success-cta .btn.ghost:active {
+  transform: scale(0.98);
 }
 
 /* ═══════════════════════════════════════
@@ -5471,6 +5532,14 @@ section[id] { scroll-margin-top: 96px; }
   body, .stage {
     padding-bottom: calc(88px + env(safe-area-inset-bottom, 0px));
   }
+  /* Screen checkout success & single viewport tanpa navbar tidak boleh terkena bottom pad */
+  body:has(.main--no-nav),
+  body:has(.checkout-success-card),
+  .main--no-nav .checkout-stage--centered,
+  .checkout-stage--centered,
+  .main--no-nav:has(.checkout-success-card) .stage {
+    padding-bottom: 0 !important;
+  }
 
   /* Top Nav Reflow: Menu link pindah ke floating bottom dock */
   .glass-nav {
@@ -5990,6 +6059,86 @@ section[id] { scroll-margin-top: 96px; }
   .checkout-card {
     padding: 20px 16px;
     border-radius: 20px;
+  }
+
+  /* Checkout Success Screen: Posisi Pas di Tengah Layar & Tombol Kapsul Ergonomis */
+  body:has(.main--no-nav),
+  body:has(.checkout-success-card) {
+    padding-bottom: 0 !important;
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+  }
+  .checkout-stage--centered,
+  .main--no-nav:has(.checkout-success-card) .stage {
+    min-height: 100dvh !important;
+    padding: max(16px, env(safe-area-inset-top, 0px)) 16px max(16px, env(safe-area-inset-bottom, 0px)) !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    align-items: center !important;
+    flex: 1 !important;
+    margin: 0 !important;
+  }
+  .checkout-block--centered,
+  .main--no-nav:has(.checkout-success-card) .checkout-block {
+    margin: auto 0 !important;
+    width: 100% !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    align-items: center !important;
+  }
+  .checkout-success-card {
+    padding: 26px 20px !important;
+    border-radius: 22px !important;
+    margin: auto !important;
+    max-width: 100% !important;
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.75) !important;
+  }
+  .checkout-success-card h2 {
+    font-size: 21px !important;
+  }
+  .checkout-success-card .order-id-highlight {
+    font-size: 15px !important;
+  }
+  .checkout-success-card .order-instruction-box {
+    padding: 13px 15px !important;
+    margin: 14px 0 18px !important;
+    border-radius: 12px !important;
+  }
+  .checkout-success-card .order-instruction-box h4 {
+    font-size: 12.5px !important;
+    margin-bottom: 6px !important;
+  }
+  .checkout-success-card .order-instruction-box ol {
+    padding-left: 16px !important;
+    font-size: 11.5px !important;
+    line-height: 1.5 !important;
+  }
+  .checkout-success-card .success-cta {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 12px !important;
+    width: 100% !important;
+    margin-top: 18px !important;
+  }
+  .checkout-success-card .success-cta .btn {
+    width: 100% !important;
+    min-height: 50px !important;
+    height: 50px !important;
+    padding: 0 20px !important;
+    font-size: 14.5px !important;
+    font-weight: 700 !important;
+    border-radius: 9999px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    box-sizing: border-box !important;
+  }
+  .checkout-success-card .success-cta .btn svg {
+    width: 20px !important;
+    height: 20px !important;
   }
 }
 
