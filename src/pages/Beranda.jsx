@@ -750,6 +750,18 @@ export default function Beranda() {
                   </div>
                 </div>
               )}
+
+              {/* Teks abu-abu di bawah form ulasan review pembeli */}
+              <div
+                className="review-scroll-hint"
+                onClick={() => setActiveStage(2)}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setActiveStage(2) }}
+              >
+                <span>scroll untuk melihat review dari teman closerz lainnya</span>
+                <span className="review-scroll-hint-arrow" aria-hidden="true">↓</span>
+              </div>
             </section>
           </div>
         )}
