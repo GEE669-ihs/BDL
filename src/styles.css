@@ -3222,7 +3222,7 @@ body:has(.beranda-stage-viewport) footer {
   }
   .beranda-stage-pane--hero .hero-cards {
     height: 280px;
-    margin: 0 auto;
+    margin: 20px auto 0;
   }
   .beranda-stage-pane--hero .flip {
     --k: 0.72;
@@ -3591,7 +3591,7 @@ body:has(.beranda-stage-viewport) footer {
     display: flex !important;
     justify-content: center !important;
     align-items: center !important;
-    margin: 0 auto 10px !important;
+    margin: 0 auto 14px !important;
     width: fit-content !important;
   }
   .beranda-stage-pane--hero .unit {
@@ -3604,10 +3604,10 @@ body:has(.beranda-stage-viewport) footer {
     height: 200px;
     transform: scale(0.68);
     transform-origin: top center;
-    margin: 4px auto 0 !important;
+    margin: 22px auto 0 !important;
   }
   .beranda-bottom-hint {
-    bottom: calc(68px + env(safe-area-inset-bottom, 0px)) !important;
+    bottom: calc(90px + env(safe-area-inset-bottom, 0px)) !important;
     font-size: 11.5px !important;
     color: rgba(255, 255, 255, 0.65) !important;
     z-index: 85;
@@ -5687,9 +5687,9 @@ section[id] { scroll-margin-top: 96px; }
   }
   .login.login--mobile-staged .login-hero .hero-cards {
     width: 100%;
-    max-width: 310px;
-    height: 250px;
-    margin: 16px auto 0;
+    max-width: 320px;
+    height: 270px;
+    margin: clamp(38px, 8.5vh, 68px) auto 0;
   }
   .login.login--mobile-staged .login-scroll-hint {
     position: absolute !important;
