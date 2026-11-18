@@ -71,7 +71,14 @@ export default function FigmaCheckout() {
   const toPayNow = form.paymentOption === 'dp50' ? dpAmount : grandTotal
 
   const handleChange = (e) => {
-    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }))
+    const { name, value } = e.target
+    if (name === 'phone') {
+      // Hanya menerima angka (karakter huruf dan simbol non-angka langsung disaring)
+      const numericOnly = value.replace(/\D/g, '')
+      setForm((prev) => ({ ...prev, phone: numericOnly }))
+      return
+    }
+    setForm((prev) => ({ ...prev, [name]: value }))
   }
 
   const generateLineMessage = (code, items, totalVal, payNowVal, shippingFee, typeLabel, typeSummary) => {
@@ -629,10 +636,23 @@ export default function FigmaCheckout() {
                   <input
                     type="tel"
                     name="phone"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
                     required
                     placeholder="Contoh: 081234567890"
                     value={form.phone}
                     onChange={handleChange}
+                    onKeyDown={(e) => {
+                      // Hanya izinkan angka 0-9, backspace, delete, tab, enter, dan panah navigasi
+                      if (
+                        !/^[0-9]$/.test(e.key) &&
+                        !['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab', 'Enter'].includes(e.key) &&
+                        !e.ctrlKey &&
+                        !e.metaKey
+                      ) {
+                        e.preventDefault()
+                      }
+                    }}
                     style={{
                       width: '100%',
                       height: 48,
