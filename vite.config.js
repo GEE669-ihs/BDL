@@ -3,7 +3,7 @@ import react from '@vitejs/plugin-react'
 
 export default defineConfig({
   plugins: [react()],
-  base: process.env.VITE_BASE_PATH || '/go-closerz/',
+  base: process.env.VITE_BASE_PATH || '/BDL/',
   server: {
     historyApiFallback: true,
   },
