@@ -1,114 +1,61 @@
 import { lazy, Suspense, useEffect } from 'react'
-import { BrowserRouter, Routes, Route, Navigate, useLocation, Outlet } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { AppProvider, useApp } from './context/AppContext'
 
-import Navbar from './components/Navbar'
-import LoginModal from './components/LoginModal'
-import CelestialAurora from './components/CelestialAurora'
-import WhatsAppAdmin from './components/WhatsAppAdmin'
-import Beranda from './pages/Beranda'
-import Katalog from './pages/Katalog'
+// Figma Pages (Frame 1:20 - Landing 1:21, Login 1:169, Sign Up 1:221, Keranjang 1:275)
+const LandingPage = lazy(() => import('./components/FigmaLandingPage'))
+const Login = lazy(() => import('./components/FigmaLogin'))
+const SignUp = lazy(() => import('./components/FigmaSignUp'))
+const Keranjang = lazy(() => import('./components/FigmaKeranjang'))
+const Checkout = lazy(() => import('./components/FigmaCheckout'))
 
-/* Lazy loading rute sekunder agar bundle awal lebih ringan & loading instan */
-const Login = lazy(() => import('./pages/Login'))
-const Otp = lazy(() => import('./pages/Otp'))
-const CaraOrder = lazy(() => import('./pages/CaraOrder'))
-const FaqPage = lazy(() => import('./pages/Faq'))
-const Checkout = lazy(() => import('./pages/Checkout'))
-
-/* Scroll ke Layar Paling Atas Setiap Kali Rute / Halaman Berpindah */
+// Scroll ke atas saat navigasi halaman
 function ScrollToTop() {
   const { pathname } = useLocation()
 
   useEffect(() => {
-    if (window.scrollY > 0) {
-      window.scrollTo({ top: 0, left: 0, behavior: 'instant' })
-      document.documentElement.scrollTop = 0
-      document.body.scrollTop = 0
-    }
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' })
   }, [pathname])
 
   return null
 }
 
-/* Persistent Layout: Navbar tetap hidup dan tidak di-unmount saat berpindah rute */
-function Layout({ children, hideNav }) {
-  const { user, logout } = useApp()
-  return (
-    <>
-      {!hideNav && <Navbar user={user} onLogout={logout} />}
-      <main className={hideNav ? 'main--no-nav' : ''}>
-        {children || (
-          <Suspense fallback={null}>
-            <Outlet />
-          </Suspense>
-        )}
-      </main>
-      <LoginModal />
-      {!hideNav && (
-        <footer>
-          <span>© 2026 GO Closerz · Solusi Group Order Photocard K-Pop Official.</span>
-        </footer>
-      )}
-    </>
-  )
-}
-
-function ProtectedRoute({ children }) {
-  const { user } = useApp()
-  if (!user) return <Navigate to="/login" replace />
-  return children
+// Global Toast Notification
+function GlobalToast() {
+  const { toast } = useApp()
+  if (!toast) return null
+  return <div className="figma-global-toast">{toast}</div>
 }
 
 function AppRoutes() {
-  const { user, login } = useApp()
-
   return (
-    <Routes>
-      {/* Halaman Autentikasi Login & OTP */}
-      <Route
-        path="/login"
-        element={
-          <Suspense fallback={null}>
-            {user ? <Navigate to="/beranda" replace /> : <Login onLogin={login} />}
-          </Suspense>
-        }
-      />
-      <Route
-        path="/otp"
-        element={
-          <Suspense fallback={null}>
-            {user ? <Navigate to="/beranda" replace /> : <Otp onVerify={login} />}
-          </Suspense>
-        }
-      />
+    <Suspense fallback={null}>
+      <Routes>
+        {/* Landing Page Figma (Node 1:21) */}
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/landing" element={<LandingPage />} />
 
-      {/* Rute Utama dengan Persistent Layout: Navbar tidak unmount saat ganti halaman */}
-      <Route element={<Layout />}>
-        <Route path="/beranda" element={<Beranda />} />
-        <Route path="/katalog" element={<Katalog />} />
-        <Route path="/cara-order" element={<CaraOrder />} />
-        <Route path="/faq" element={<FaqPage />} />
-      </Route>
+        {/* Halaman Autentikasi Figma */}
+        <Route path="/login" element={<Login />} />
+        <Route path="/login-figma" element={<Login />} />
+        <Route path="/signup" element={<SignUp />} />
+        <Route path="/signup-figma" element={<SignUp />} />
 
-      {/* Halaman Checkout: Khusus pengguna yang sudah login (tanpa navbar) */}
-      <Route
-        path="/checkout"
-        element={
-          <ProtectedRoute>
-            <Layout hideNav>
-              <Suspense fallback={null}>
-                <Checkout />
-              </Suspense>
-            </Layout>
-          </ProtectedRoute>
-        }
-      />
+        {/* Halaman Keranjang Figma (Node 1:275) */}
+        <Route path="/keranjang" element={<Keranjang />} />
+        <Route path="/keranjang-figma" element={<Keranjang />} />
 
-      {/* Saat pertama kali membuka website langsung membuka halaman Beranda */}
-      <Route path="/" element={<Navigate to="/beranda" replace />} />
-      <Route path="*" element={<Navigate to="/beranda" replace />} />
-    </Routes>
+        {/* Halaman Checkout */}
+        <Route path="/checkout" element={<Checkout />} />
+
+        {/* Redirect semua rute lama / tidak dikenal ke beranda landing page */}
+        <Route path="/beranda" element={<Navigate to="/" replace />} />
+        <Route path="/katalog" element={<Navigate to="/" replace />} />
+        <Route path="/cara-order" element={<Navigate to="/" replace />} />
+        <Route path="/faq" element={<Navigate to="/" replace />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </Suspense>
   )
 }
 
@@ -117,9 +64,8 @@ export default function App() {
     <BrowserRouter basename={import.meta.env.BASE_URL}>
       <AppProvider>
         <ScrollToTop />
-        <CelestialAurora />
         <AppRoutes />
-        <WhatsAppAdmin />
+        <GlobalToast />
       </AppProvider>
     </BrowserRouter>
   )

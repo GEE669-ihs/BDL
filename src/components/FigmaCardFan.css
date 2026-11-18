@@ -1,0 +1,370 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+   FIGMA CARD FAN & FLIPCARD SYSTEM
+   Exact recreation of Figma Card Fan (Hero & Keranjang Kosong)
+   Matching uploaded screenshot:
+   - Halftone Dot Matrix Texture
+   - Yuna (-10°), Kai-R (0°, center elevated), Mira (+10°)
+   - Interactive 3D Flip & Tilt
+   ───────────────────────────────────────────────────────────────────────────── */
+
+.figma-fan-wrapper {
+  position: relative;
+  width: 100%;
+  max-width: 720px;
+  height: 490px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+  perspective: 1200px;
+  user-select: none;
+}
+
+/* Halftone Dot Matrix Background from Figma Asset */
+.figma-fan-dot-bg {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 760px;
+  height: 600px;
+  max-width: 100%;
+  background-image: url('../assets/figma/dot-matrix-bg.png');
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
+  opacity: 0.72;
+  pointer-events: none;
+  z-index: 0;
+  transition: opacity 0.3s ease;
+}
+
+/* Fan Items Grid / Stack */
+.figma-fan-stage {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+}
+
+/* Individual Card Container */
+.figma-flipcard-item {
+  position: absolute;
+  cursor: pointer;
+  transform-style: preserve-3d;
+  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease;
+  will-change: transform;
+}
+
+/* Left Card: YUNA (Node 1:73 / 1:278) */
+.figma-flipcard-item.card-left {
+  width: 212px;
+  height: 326px;
+  z-index: 2;
+  transform: translate(-115px, 14px) rotate(-11deg);
+}
+
+.figma-flipcard-item.card-left:hover {
+  transform: translate(-115px, -6px) rotate(-11deg) scale(1.04);
+  z-index: 10;
+}
+
+.figma-flipcard-item.card-left.is-flipped {
+  transform: translate(-115px, 14px) rotate(-11deg) rotateY(180deg);
+  z-index: 15;
+}
+
+/* Center Card: KAI-R (Node 1:85 / 1:290) - Elevated Front */
+.figma-flipcard-item.card-center {
+  width: 222px;
+  height: 342px;
+  z-index: 5;
+  transform: translate(0px, -10px) rotate(0deg);
+}
+
+.figma-flipcard-item.card-center:hover {
+  transform: translate(0px, -24px) scale(1.05);
+  z-index: 20;
+}
+
+.figma-flipcard-item.card-center.is-flipped {
+  transform: translate(0px, -10px) rotateY(180deg);
+  z-index: 25;
+}
+
+/* Right Card: MIRA (Node 1:79 / 1:284) */
+.figma-flipcard-item.card-right {
+  width: 212px;
+  height: 326px;
+  z-index: 3;
+  transform: translate(115px, 18px) rotate(11deg);
+}
+
+.figma-flipcard-item.card-right:hover {
+  transform: translate(115px, -2px) rotate(11deg) scale(1.04);
+  z-index: 10;
+}
+
+.figma-flipcard-item.card-right.is-flipped {
+  transform: translate(115px, 18px) rotate(11deg) rotateY(180deg);
+  z-index: 15;
+}
+
+/* Inner 3D Flip Shell */
+.figma-flipcard-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  border-radius: 18px;
+}
+
+.figma-flipcard-item.is-flipped .figma-flipcard-inner {
+  transform: rotateY(180deg);
+}
+
+/* Shared Card Face */
+.figma-card-face {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 18px;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  overflow: hidden;
+  padding: 18px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+/* Front Face */
+.figma-card-front {
+  border: 1.5px solid rgba(255, 255, 255, 0.5);
+  box-shadow: 0 16px 40px rgba(44, 35, 80, 0.45);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Fluid Aurora Caustics Shader Texture from Figma (Node 1:86) */
+.figma-card-aurora {
+  position: absolute;
+  inset: 0;
+  border-radius: 18px;
+  background-image: url('../assets/figma/card-bg-kair.png');
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* 1. Left Card: YUNA (Node 1:73) - Deep Midnight Violet with Smoky Aurora Wisps */
+.card-left .figma-card-front {
+  background: linear-gradient(180deg, #3f2e81 0%, #1e1544 42%, #14111c 73%, #0b0912 100%);
+  border: 1.5px solid rgba(255, 255, 255, 0.45);
+  box-shadow: 0 16px 40px rgba(18, 14, 40, 0.6);
+}
+
+.card-left .figma-card-aurora {
+  opacity: 0.58;
+  mix-blend-mode: screen;
+  filter: hue-rotate(15deg) brightness(0.68) contrast(1.45);
+}
+
+/* 2. Center Card: KAI-R (Node 1:85) - Luminous Iridescent Cosmic Aurora Caustics */
+.card-center .figma-card-front {
+  background: linear-gradient(180deg, #6a4fd6 0%, #7dc8ff 100%);
+  border: 1.5px solid rgba(255, 255, 255, 0.85);
+  box-shadow: 0 24px 50px rgba(22, 14, 52, 0.7), 0 6px 16px rgba(22, 14, 52, 0.45);
+}
+
+.card-center .figma-card-aurora {
+  opacity: 1;
+  mix-blend-mode: normal;
+}
+
+/* 3. Right Card: MIRA (Node 1:79) - Misty Slate-Lavender Aurora */
+.card-right .figma-card-front {
+  background: linear-gradient(180deg, rgb(136, 159, 206) 6.7%, rgb(98, 117, 156) 51%, rgb(85, 100, 141) 58.7%, rgb(26, 16, 64) 96.2%);
+  border: 1.5px solid rgba(255, 255, 255, 0.45);
+  box-shadow: 0 16px 40px rgba(18, 14, 40, 0.6);
+}
+
+.card-right .figma-card-aurora {
+  opacity: 0.68;
+  mix-blend-mode: soft-light;
+  filter: hue-rotate(-20deg) brightness(1.15) contrast(1.25);
+}
+
+/* Card Top: Number & 4-pointed Star */
+.figma-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+  z-index: 5;
+}
+
+.figma-card-num {
+  font-family: 'Unbounded', sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+  color: #d9dce6;
+  letter-spacing: 0.05em;
+}
+
+.card-center .figma-card-num {
+  color: #ffffff;
+}
+
+.figma-card-sparkle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.6));
+}
+
+.figma-card-sparkle svg {
+  width: 18px;
+  height: 18px;
+  fill: #ffffff;
+}
+
+/* Card Bottom: Member Name & Group */
+.figma-card-footer {
+  position: relative;
+  z-index: 5;
+  margin-top: auto;
+  text-align: left;
+}
+
+.figma-card-name {
+  font-family: 'Unbounded', sans-serif;
+  font-weight: 900;
+  font-size: 22px;
+  line-height: 1.1;
+  color: #ffffff;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+  letter-spacing: -0.02em;
+}
+
+.card-center .figma-card-name {
+  font-size: 24px;
+}
+
+.figma-card-group {
+  font-family: 'Figtree', sans-serif;
+  font-weight: 600;
+  font-size: 12px;
+  color: #d9dce6;
+  margin-top: 4px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.card-center .figma-card-group {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+/* Hologram Shimmer Layer on Front */
+.figma-card-hologram {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    circle at 50% 30%,
+    rgba(255, 255, 255, 0.35) 0%,
+    rgba(255, 198, 227, 0.2) 25%,
+    rgba(125, 200, 255, 0.2) 50%,
+    transparent 80%
+  );
+  mix-blend-mode: overlay;
+  opacity: 0.7;
+  transition: opacity 0.3s ease;
+}
+
+/* Back Face (when flipped) */
+.figma-card-back {
+  background: linear-gradient(135deg, #1b2a6b 0%, #2b1e79 50%, #14111c 100%);
+  border: 1.5px solid rgba(125, 200, 255, 0.5);
+  transform: rotateY(180deg);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  text-align: center;
+  padding: 24px 18px;
+}
+
+.figma-card-back-seal {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 1.5px solid #7dc8ff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(125, 200, 255, 0.1);
+  color: #7dc8ff;
+  font-size: 20px;
+  box-shadow: 0 0 16px rgba(125, 200, 255, 0.4);
+}
+
+.figma-card-back-title {
+  font-family: 'Unbounded', sans-serif;
+  font-weight: 900;
+  font-size: 14px;
+  color: #f4eef8;
+  letter-spacing: 0.05em;
+  margin-top: 8px;
+}
+
+.figma-card-back-sub {
+  font-family: 'Figtree', sans-serif;
+  font-size: 11px;
+  color: #7dc8ff;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.figma-card-back-code {
+  font-family: monospace;
+  font-size: 11px;
+  color: #94a3b8;
+  letter-spacing: 0.1em;
+  padding: 4px 10px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 6px;
+}
+
+.figma-card-back-hint {
+  font-family: 'Figtree', sans-serif;
+  font-size: 10px;
+  color: #c7dde9;
+  opacity: 0.7;
+}
+
+/* Responsive Scaling for smaller screens */
+@media (max-width: 640px) {
+  .figma-fan-wrapper {
+    height: 360px;
+    transform: scale(0.85);
+  }
+
+  .figma-flipcard-item.card-left {
+    transform: translate(-80px, 10px) rotate(-10deg);
+  }
+
+  .figma-flipcard-item.card-right {
+    transform: translate(80px, 15px) rotate(10deg);
+  }
+}

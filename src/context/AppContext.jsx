@@ -1,10 +1,9 @@
 import { createContext, useContext, useState } from 'react'
-import { CARDS } from '../data'
+import { FIGMA_CATALOG_CARDS } from '../data/figmaCatalog'
 
-const SESSION_KEY = 'gc_session'
+const SESSION_KEY = 'closerz_user_session'
 const SLOTS_STORAGE_KEY = 'closerz_card_slots'
 
-// Inisialisasi slot dari localStorage atau default data CARDS
 const getInitialSlots = () => {
   try {
     const saved = localStorage.getItem(SLOTS_STORAGE_KEY)
@@ -14,8 +13,8 @@ const getInitialSlots = () => {
     }
   } catch {}
   const initial = {}
-  CARDS.forEach((c) => {
-    initial[c.id] = c.stock
+  FIGMA_CATALOG_CARDS.forEach((c) => {
+    initial[c.id] = c.slots
   })
   return initial
 }
@@ -23,51 +22,108 @@ const getInitialSlots = () => {
 const AppCtx = createContext(null)
 
 export function AppProvider({ children }) {
-  const [user, setUser] = useState(() => localStorage.getItem(SESSION_KEY))
-  const [cart, setCart] = useState({})
-  const [cartOpen, setCartOpen] = useState(false)
+  const [user, setUser] = useState(() => {
+    try {
+      const saved = localStorage.getItem(SESSION_KEY)
+      if (saved) {
+        return JSON.parse(saved)
+      }
+    } catch {
+      const raw = localStorage.getItem(SESSION_KEY)
+      return raw ? { email: raw, name: raw.split('@')[0] } : null
+    }
+    return null
+  })
+
+  // Cart disimpan sebagai array objek: [{ id, name, group, type, edition, price, qty, stock, ... }]
+  const [cart, setCart] = useState([])
   const [toast, setToast] = useState(null)
   const [slots, setSlots] = useState(getInitialSlots)
 
-  // State untuk modal persyaratan login sebelum belanja
-  const [loginModalOpen, setLoginModalOpen] = useState(false)
-  const [loginModalReason, setLoginModalReason] = useState('')
+  const showToast = (msg) => {
+    setToast(msg)
+    setTimeout(() => setToast(null), 3000)
+  }
 
-  const login = (em) => {
-    localStorage.setItem(SESSION_KEY, em)
-    setUser(em)
+  const login = (userData) => {
+    const u = typeof userData === 'string' ? { email: userData, name: userData.split('@')[0] } : userData
+    localStorage.setItem(SESSION_KEY, JSON.stringify(u))
+    setUser(u)
   }
 
   const logout = () => {
     localStorage.removeItem(SESSION_KEY)
     setUser(null)
-    setCart({})
+    setCart([])
   }
 
-  const requireAuth = (reason = 'melanjutkan pembelian') => {
-    if (!user) {
-      setLoginModalReason(reason)
-      setLoginModalOpen(true)
+  const getCardSlot = (cardId) => {
+    if (slots[cardId] !== undefined) return slots[cardId]
+    const found = FIGMA_CATALOG_CARDS.find((c) => c.id === cardId)
+    return found ? found.slots : 0
+  }
+
+  // Tambah photocard ke keranjang
+  const add = (card, qty = 1) => {
+    const availableSlot = getCardSlot(card.id)
+    if (availableSlot <= 0) {
+      showToast(`Slot untuk ${card.name} sudah habis!`)
       return false
     }
+
+    setCart((prev) => {
+      const existingIndex = prev.findIndex((item) => item.id === card.id)
+      if (existingIndex > -1) {
+        const next = [...prev]
+        const currentQty = next[existingIndex].qty || 1
+        const newQty = Math.min(availableSlot, currentQty + qty)
+        next[existingIndex] = { ...next[existingIndex], qty: newQty }
+        return next
+      } else {
+        return [
+          ...prev,
+          {
+            ...card,
+            type: card.type || card.edition || 'Fotokard PO',
+            qty: Math.min(availableSlot, qty),
+            stock: availableSlot,
+          },
+        ]
+      }
+    })
+
+    showToast(`${card.name} (${qty} kartu) berhasil ditambahkan ke keranjang!`)
     return true
   }
 
-  // Dapatkan sisa slot photocard saat ini
-  const getCardSlot = (cardId) => {
-    if (slots[cardId] !== undefined) {
-      return slots[cardId]
+  // Update kuantitas item dalam keranjang
+  const updateQty = (id, newQty) => {
+    if (newQty <= 0) {
+      remove(id)
+      return
     }
-    const found = CARDS.find((c) => c.id === cardId)
-    return found ? found.stock : 0
+    const maxAvailable = getCardSlot(id)
+    setCart((prev) =>
+      prev.map((item) =>
+        item.id === id ? { ...item, qty: Math.min(maxAvailable, newQty) } : item
+      )
+    )
   }
 
-  // Kurangi slot saat checkout selesai
+  // Hapus item dari keranjang
+  const remove = (id) => {
+    setCart((prev) => prev.filter((item) => item.id !== id))
+  }
+
+  // Kosongkan keranjang
+  const clear = () => setCart([])
+
+  // Kurangi kuantitas slot saat checkout selesai
   const reduceSlots = (orderedItems) => {
     setSlots((prev) => {
       const next = { ...prev }
       orderedItems.forEach((item) => {
-        const current = next[item.id] !== undefined ? next[item.id] : item.stock
+        const current = next[item.id] !== undefined ? next[item.id] : item.slots
         const qty = item.qty || 1
         next[item.id] = Math.max(0, current - qty)
       })
@@ -78,45 +134,9 @@ export function AppProvider({ children }) {
     })
   }
 
-  const add = (card, qty = 1) => {
-    // Pengguna belum login tidak dapat menambahkan photocard ke keranjang
-    if (!user) {
-      setLoginModalReason(`menambahkan photocard ${card.name} (${card.type}) ke keranjang`)
-      setLoginModalOpen(true)
-      return false
-    }
-
-    const availableSlot = getCardSlot(card.id)
-    if (availableSlot <= 0) {
-      setToast(`Maaf, slot untuk photocard ${card.name} sudah habis!`)
-      setTimeout(() => setToast(null), 2500)
-      return false
-    }
-
-    setCart((c) => ({
-      ...c,
-      [card.id]: Math.min(availableSlot, (c[card.id] || 0) + qty),
-    }))
-    setToast(`${card.name} (${qty} kartu) ditambahkan ke keranjang`)
-    setTimeout(() => setToast(null), 2500)
-    return true
-  }
-
-  const remove = (id) =>
-    setCart((c) => {
-      const next = { ...c }
-      delete next[id]
-      return next
-    })
-
-  const clear = () => setCart({})
-
-  const items = CARDS.filter((c) => cart[c.id] > 0).map((c) => ({
-    ...c,
-    stock: getCardSlot(c.id),
-  }))
-  const count = items.reduce((n, c) => n + cart[c.id], 0)
-  const total = items.reduce((n, c) => n + cart[c.id] * c.price, 0)
+  const count = cart.reduce((acc, item) => acc + (item.qty || 1), 0)
+  const subtotal = cart.reduce((acc, item) => acc + (item.price || 0) * (item.qty || 1), 0)
+  const total = subtotal
 
   return (
     <AppCtx.Provider
@@ -124,24 +144,19 @@ export function AppProvider({ children }) {
         user,
         login,
         logout,
-        requireAuth,
         cart,
-        cartOpen,
-        setCartOpen,
+        items: cart, // alias kompatibilitas
+        count,
+        subtotal,
+        total,
         toast,
         add,
+        updateQty,
         remove,
         clear,
-        items,
-        count,
-        total,
         slots,
         getCardSlot,
         reduceSlots,
-        loginModalOpen,
-        setLoginModalOpen,
-        loginModalReason,
-        setLoginModalReason,
       }}
     >
       {children}
