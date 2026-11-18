@@ -233,6 +233,184 @@
   font-weight: 500;
 }
 
+/* Admin Icon Button di sebelah profile */
+.figma-admin-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(125, 200, 255, 0.1);
+  border: 1.5px solid rgba(125, 200, 255, 0.35);
+  color: #7dc8ff;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  padding: 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  margin-left: 2px;
+}
+
+.figma-admin-icon-btn:hover {
+  background: rgba(125, 200, 255, 0.22);
+  border-color: #7dc8ff;
+  color: #ffffff;
+  transform: scale(1.08);
+  box-shadow: 0 0 14px rgba(125, 200, 255, 0.45);
+}
+
+.figma-admin-icon-btn svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* Modal Masukkan PIN Admin */
+.figma-pin-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(14, 10, 36, 0.75);
+  backdrop-filter: blur(8px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: figmaFadeIn 0.2s ease;
+}
+
+.figma-pin-modal {
+  width: 100%;
+  max-width: 420px;
+  background: #2b1e79;
+  border: 1.5px solid rgba(125, 200, 255, 0.4);
+  border-radius: 20px;
+  padding: 32px 28px;
+  text-align: center;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5), 0 0 30px rgba(125, 200, 255, 0.2);
+  box-sizing: border-box;
+  animation: figmaScaleUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes figmaFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes figmaScaleUp {
+  from { opacity: 0; transform: scale(0.92) translateY(10px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.figma-pin-modal-icon {
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  background: rgba(125, 200, 255, 0.15);
+  border: 1.5px solid #7dc8ff;
+  color: #7dc8ff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 16px;
+  box-shadow: 0 0 16px rgba(125, 200, 255, 0.35);
+}
+
+.figma-pin-modal-icon svg {
+  width: 26px;
+  height: 26px;
+}
+
+.figma-pin-modal-title {
+  font-family: 'Unbounded', sans-serif;
+  font-weight: 800;
+  font-size: 19px;
+  color: #ffffff;
+  margin: 0 0 8px;
+}
+
+.figma-pin-modal-desc {
+  font-family: 'Figtree', sans-serif;
+  font-size: 14px;
+  color: #c7dde9;
+  margin: 0 0 22px;
+  line-height: 1.45;
+}
+
+.figma-pin-modal-input {
+  width: 100%;
+  height: 50px;
+  border-radius: 12px;
+  border: 1.5px solid rgba(125, 200, 255, 0.4);
+  background: rgba(10, 8, 24, 0.7);
+  color: #ffffff;
+  text-align: center;
+  font-size: 24px;
+  letter-spacing: 0.35em;
+  font-family: 'Unbounded', monospace;
+  box-sizing: border-box;
+  margin-bottom: 12px;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.figma-pin-modal-input:focus {
+  border-color: #7dc8ff;
+  box-shadow: 0 0 14px rgba(125, 200, 255, 0.4);
+}
+
+.figma-pin-modal-error {
+  color: #ff8ca3;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+
+.figma-pin-modal-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.figma-pin-modal-btn-cancel {
+  flex: 1;
+  height: 44px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.08);
+  color: #d9dce6;
+  font-family: 'Unbounded', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.figma-pin-modal-btn-cancel:hover {
+  background: rgba(255, 255, 255, 0.16);
+  color: #ffffff;
+}
+
+.figma-pin-modal-btn-submit {
+  flex: 1.4;
+  height: 44px;
+  border-radius: 12px;
+  border: none;
+  background: linear-gradient(135deg, #7dc8ff 0%, #6a4fd6 100%);
+  color: #ffffff;
+  font-family: 'Unbounded', sans-serif;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 14px rgba(106, 79, 214, 0.4);
+}
+
+.figma-pin-modal-btn-submit:hover {
+  filter: brightness(1.1);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(125, 200, 255, 0.5);
+}
+
 /* ─────────────────────────────────────────────────────────────
    3. HERO (HALAMAN AWAL)
    ───────────────────────────────────────────────────────────── */
@@ -1011,6 +1189,23 @@
   }
   .figma-badge {
     display: none;
+  }
+  .figma-nav-actions {
+    gap: 8px;
+  }
+  .figma-cart-btn {
+    height: 38px;
+    padding: 0 12px;
+    font-size: 13px;
+    gap: 6px;
+  }
+  .figma-admin-icon-btn {
+    width: 36px;
+    height: 36px;
+  }
+  .figma-admin-icon-btn svg {
+    width: 17px;
+    height: 17px;
   }
   .figma-grid {
     grid-template-columns: 1fr;

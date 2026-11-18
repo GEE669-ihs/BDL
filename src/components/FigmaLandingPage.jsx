@@ -57,6 +57,30 @@ export default function FigmaLandingPage() {
   // FAQ Accordion State
   const [openFaqIndex, setOpenFaqIndex] = useState(0)
 
+  // PIN Admin State (Khusus Teman - 6 Digit)
+  const ADMIN_PIN = '412504'
+  const [showPinModal, setShowPinModal] = useState(false)
+  const [pinInput, setPinInput] = useState('')
+  const [pinError, setPinError] = useState('')
+
+  const handleAdminClick = () => {
+    // Admin harus selalu memasukkan PIN kembali saat mengakses admin dari website
+    setPinInput('')
+    setPinError('')
+    setShowPinModal(true)
+  }
+
+  const handlePinSubmit = (e) => {
+    e.preventDefault()
+    if (pinInput.trim() === ADMIN_PIN) {
+      sessionStorage.setItem('closerz_admin_unlocked', 'true')
+      setShowPinModal(false)
+      navigate('/admin')
+    } else {
+      setPinError('PIN salah! Akses ke panel admin ditolak.')
+    }
+  }
+
   // Scroll watcher
   useEffect(() => {
     const handleScroll = () => {
@@ -198,14 +222,6 @@ export default function FigmaLandingPage() {
             >
               FAQ
             </button>
-            <button
-              type="button"
-              className="figma-nav-link figma-admin-link"
-              onClick={() => navigate('/admin')}
-              title="Dashboard Admin Kelola Grup & Photocard"
-            >
-              Admin
-            </button>
           </nav>
 
           {/* Action Badges */}
@@ -251,6 +267,21 @@ export default function FigmaLandingPage() {
               <span className="figma-profile-label" data-node-id="1:44">
                 {user ? (user.name || 'Akun') : 'Profile'}
               </span>
+            </button>
+
+            {/* Tombol Icon Admin Khusus Teman (Ditaruh di sebelah profile) */}
+            <button
+              type="button"
+              className="figma-admin-icon-btn"
+              onClick={handleAdminClick}
+              title="Akses Panel Admin (PIN Khusus Teman)"
+              aria-label="Panel Admin"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                <path d="M12 8v4" />
+                <circle cx="12" cy="15" r="1" fill="currentColor" />
+              </svg>
             </button>
           </div>
         </div>
@@ -575,6 +606,75 @@ export default function FigmaLandingPage() {
           </p>
         </div>
       </footer>
+
+      {/* ── MODAL PIN ADMIN KHUSUS TEMAN ── */}
+      {showPinModal && (
+        <div
+          className="figma-pin-modal-backdrop"
+          onClick={() => setShowPinModal(false)}
+        >
+          <div
+            className="figma-pin-modal"
+            onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="pin-modal-title"
+          >
+            <div className="figma-pin-modal-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                <path d="M12 8v4" />
+                <circle cx="12" cy="15" r="1" fill="currentColor" />
+              </svg>
+            </div>
+
+            <h3 id="pin-modal-title" className="figma-pin-modal-title">
+              Akses Panel Admin
+            </h3>
+            <p className="figma-pin-modal-desc">
+              Panel ini khusus untuk pengelola. Silakan masukkan 6 digit PIN rahasia untuk melanjutkan:
+            </p>
+
+            <form onSubmit={handlePinSubmit}>
+              <input
+                type="password"
+                inputMode="numeric"
+                maxLength={6}
+                placeholder="••••••"
+                value={pinInput}
+                onChange={(e) => {
+                  setPinInput(e.target.value.replace(/\D/g, '').slice(0, 6))
+                  setPinError('')
+                }}
+                autoFocus
+                className="figma-pin-modal-input"
+              />
+
+              {pinError && (
+                <div className="figma-pin-modal-error">
+                  {pinError}
+                </div>
+              )}
+
+              <div className="figma-pin-modal-actions">
+                <button
+                  type="button"
+                  className="figma-pin-modal-btn-cancel"
+                  onClick={() => setShowPinModal(false)}
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  className="figma-pin-modal-btn-submit"
+                >
+                  Buka Admin
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

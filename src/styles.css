@@ -181,3 +181,31 @@ select {
     transform: translateY(0);
   }
 }
+
+/* ─────────────────────────────────────────────────────────────
+   Nonaktifkan Drag pada Seluruh Gambar, Card & Asset di Website
+   ───────────────────────────────────────────────────────────── */
+img,
+svg,
+picture,
+canvas,
+video,
+.figma-decor-card,
+.figma-flipcard-item,
+.figma-card-face,
+.figma-fan-card-img,
+.figma-card-back-asset-img,
+.figma-catalog-card-img,
+.figma-decor-card-img,
+.figma-decor-card-back-asset,
+.figma-cart-item-img,
+.figma-checkout-thumb,
+.figma-profile-avatar {
+  -webkit-user-drag: none !important;
+  -khtml-user-drag: none !important;
+  -moz-user-drag: none !important;
+  -o-user-drag: none !important;
+  user-drag: none !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+}

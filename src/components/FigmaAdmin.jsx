@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useApp } from '../context/AppContext'
 import './FigmaAdmin.css'
@@ -36,6 +36,41 @@ export default function FigmaAdmin() {
   // Quick edit slot state
   const [editingSlotId, setEditingSlotId] = useState(null)
   const [tempSlotVal, setTempSlotVal] = useState('')
+
+  // PIN Protection State (Khusus Teman - 6 Digit)
+  const ADMIN_PIN = '240404'
+  const [isUnlocked, setIsUnlocked] = useState(() => {
+    return sessionStorage.getItem('closerz_admin_unlocked') === 'true'
+  })
+  const [adminPinInput, setAdminPinInput] = useState('')
+  const [adminPinError, setAdminPinError] = useState('')
+
+  const handleUnlockAdmin = (e) => {
+    e.preventDefault()
+    if (adminPinInput.trim() === ADMIN_PIN) {
+      sessionStorage.setItem('closerz_admin_unlocked', 'true')
+      setIsUnlocked(true)
+      setAdminPinError('')
+    } else {
+      setAdminPinError('PIN salah! Akses ke panel admin ditolak.')
+    }
+  }
+
+  // Kembali ke website dan kunci kembali sesi admin
+  const handleReturnToWebsite = (e) => {
+    if (e && e.preventDefault) e.preventDefault()
+    sessionStorage.removeItem('closerz_admin_unlocked')
+    setIsUnlocked(false)
+    setAdminPinInput('')
+    navigate('/landing')
+  }
+
+  // Saat komponen admin unmount (pindah rute), selalu bersihkan izin unlock
+  useEffect(() => {
+    return () => {
+      sessionStorage.removeItem('closerz_admin_unlocked')
+    }
+  }, [])
 
   const fileInputRef = useRef(null)
 
@@ -116,13 +151,126 @@ export default function FigmaAdmin() {
     setEditingSlotId(null)
   }
 
+  if (!isUnlocked) {
+    return (
+      <div className="figma-admin-page">
+        <header className="figma-admin-header">
+          <div className="figma-admin-header-inner">
+            <div className="figma-admin-brand">
+              <Link to="/landing" className="figma-admin-logo" onClick={handleReturnToWebsite}>
+                <span className="logo-g">G</span>
+                <span className="logo-star">★</span>
+                <span className="logo-closerz">Closerz</span>
+              </Link>
+              <span className="figma-admin-badge">Admin Dashboard</span>
+            </div>
+            <div className="figma-admin-nav-actions">
+              <button
+                type="button"
+                className="figma-admin-btn-back"
+                onClick={handleReturnToWebsite}
+              >
+                ← Kembali ke Website
+              </button>
+            </div>
+          </div>
+        </header>
+
+        <main className="figma-admin-container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '65vh' }}>
+          <div className="figma-admin-card" style={{ maxWidth: 440, width: '100%', textAlign: 'center', padding: '40px 32px' }}>
+            <div style={{
+              width: 58,
+              height: 58,
+              borderRadius: '50%',
+              background: 'rgba(125, 200, 255, 0.15)',
+              border: '1.5px solid #7dc8ff',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              margin: '0 auto 18px',
+              color: '#7dc8ff',
+              boxShadow: '0 0 16px rgba(125, 200, 255, 0.35)',
+            }}>
+              <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                <path d="M12 8v4" />
+                <circle cx="12" cy="15" r="1" fill="currentColor" />
+              </svg>
+            </div>
+
+            <h2 style={{ fontFamily: 'Unbounded, sans-serif', fontSize: 20, color: '#ffffff', marginBottom: 8 }}>
+              Panel Admin Terkunci
+            </h2>
+            <p style={{ color: '#c7dde9', fontSize: 14, marginBottom: 24, lineHeight: 1.5 }}>
+              Halaman ini hanya dapat diakses oleh admin/pengelola. Silakan masukkan 6 digit PIN rahasia untuk melanjutkan:
+            </p>
+
+            <form onSubmit={handleUnlockAdmin}>
+              <input
+                type="password"
+                inputMode="numeric"
+                maxLength={6}
+                placeholder="••••••"
+                value={adminPinInput}
+                onChange={(e) => {
+                  setAdminPinInput(e.target.value.replace(/\D/g, '').slice(0, 6))
+                  setAdminPinError('')
+                }}
+                autoFocus
+                style={{
+                  width: '100%',
+                  height: 50,
+                  borderRadius: 12,
+                  border: '1.5px solid rgba(125, 200, 255, 0.4)',
+                  background: 'rgba(10, 8, 24, 0.7)',
+                  color: '#ffffff',
+                  textAlign: 'center',
+                  fontSize: 22,
+                  letterSpacing: '0.3em',
+                  fontFamily: 'Unbounded, monospace',
+                  marginBottom: adminPinError ? 8 : 18,
+                  outline: 'none',
+                  boxSizing: 'border-box',
+                }}
+              />
+
+              {adminPinError && (
+                <div style={{ color: '#ff8ca3', fontSize: 13, fontWeight: 600, marginBottom: 16 }}>
+                  {adminPinError}
+                </div>
+              )}
+
+              <div style={{ display: 'flex', gap: 12 }}>
+                <button
+                  type="button"
+                  className="figma-admin-btn-cancel"
+                  onClick={() => navigate('/landing')}
+                  style={{ flex: 1, height: 44, borderRadius: 12 }}
+                >
+                  Kembali
+                </button>
+                <button
+                  type="submit"
+                  className="figma-admin-btn-primary"
+                  style={{ flex: 1.2, height: 44, borderRadius: 12 }}
+                >
+                  Buka Admin
+                </button>
+              </div>
+            </form>
+          </div>
+        </main>
+      </div>
+    )
+  }
+
   return (
     <div className="figma-admin-page">
       {/* ── TOP HEADER (Tema Halaman Utama Figma) ── */}
       <header className="figma-admin-header">
         <div className="figma-admin-header-inner">
           <div className="figma-admin-brand">
-            <Link to="/landing" className="figma-admin-logo">
+            <Link to="/landing" className="figma-admin-logo" onClick={handleReturnToWebsite}>
               <span className="logo-g">G</span>
               <span className="logo-star">★</span>
               <span className="logo-closerz">Closerz</span>
@@ -134,7 +282,7 @@ export default function FigmaAdmin() {
             <button
               type="button"
               className="figma-admin-btn-back"
-              onClick={() => navigate('/landing')}
+              onClick={handleReturnToWebsite}
             >
               ← Kembali ke Website
             </button>
