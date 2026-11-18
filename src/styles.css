@@ -4,13 +4,36 @@ html {
   scroll-behavior: auto;
   -webkit-overflow-scrolling: touch;
   scrollbar-gutter: stable;
+  background: #2a1d75;
 }
 body {
   position: relative;
   isolation: isolate;
   font-family: var(--body);
   color: #fff;
-  background: #0d0a1c;
+  background: linear-gradient(
+    180deg,
+    #2a1d75 0%,
+    #35297f 4%,
+    #575497 8%,
+    #7b7eb1 12%,
+    #9ca9c9 16%,
+    #c7ddea 20.5%,
+    #b9c8e7 27%,
+    #abb1e3 35%,
+    #9a98e1 43%,
+    #8576dd 55%,
+    #735dd9 62%,
+    #6a4ed6 67.5%,
+    #877add 72%,
+    #a5a9e4 75%,
+    #c6dce9 79%,
+    #a8b8d4 84%,
+    #8289b8 88%,
+    #5f5e9e 92%,
+    #3a3085 96%,
+    #2b1e78 100%
+  );
   min-height: 100vh;
 }
 button{font:inherit;cursor:pointer;border:0;color:inherit;background:none}
@@ -32,23 +55,23 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid var(-
   box-shadow: 0 8px 40px rgba(0,0,0,.35), 0 1px 0 rgba(125,203,255,.18);
 }
 /* ═══════════════════════════════════════
-   RUNNING TEXT (TICKER) - SOLID BLACK MATTE & NEON STARS
+   RUNNING TEXT (TICKER) - SKY BLUE THEME (SESUAI ASSET LANDING PAGE)
 ═══════════════════════════════════════ */
 .ticker {
   position: relative;
   z-index: 30;
-  background: #000000;
+  background: linear-gradient(90deg, #609ee3 0%, #70b1eb 50%, #609ee3 100%);
   color: #ffffff;
   overflow: hidden;
   white-space: nowrap;
   font-family: var(--body);
   font-size: 12px;
-  font-weight: 500;
+  font-weight: 600;
   letter-spacing: 0.02em;
   padding: 8px 0;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
-  border-top: 1px solid rgba(255, 255, 255, 0.12);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 4px 16px rgba(15, 30, 60, 0.25);
+  border-top: 1px solid rgba(255, 255, 255, 0.35);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
   user-select: none;
   contain: paint layout;
   transform: translateZ(0);
@@ -89,6 +112,8 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid var(-
   font-size: 12px;
   letter-spacing: 0.02em;
   color: #ffffff;
+  font-weight: 600;
+  text-shadow: 0 1px 2px rgba(10, 30, 70, 0.45);
 }
 .ticker:hover .ticker-item:hover .ticker-text {
   color: #ffffff;
@@ -107,7 +132,7 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid var(-
   border: none;
   border-radius: 0;
   box-shadow: none;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+  text-shadow: 0 1px 3px rgba(8, 25, 60, 0.55);
 }
 .ticker-badge--cyan,
 .ticker-badge--gold,
@@ -117,14 +142,14 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid var(-
   border: none;
   background: transparent;
 }
-/* Bintang Neon Ungu Bercahaya */
+/* Bintang Terang Bercahaya */
 .ticker-dot {
   font-size: 11px;
-  color: #d8b4fe;
-  text-shadow: 0 0 6px #c084fc, 0 0 14px #a855f7, 0 0 24px rgba(168, 85, 247, 0.85);
+  color: #ffffff;
+  text-shadow: 0 0 6px rgba(255, 255, 255, 0.95), 0 0 12px #38bdf8;
   display: inline-block;
   transform: translateY(-0.5px);
-  filter: drop-shadow(0 0 4px #c084fc);
+  filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.8));
 }
 @keyframes marquee {
   0% { transform: translate3d(0, 0, 0); }
@@ -1684,6 +1709,43 @@ h2 {
   text-align: center;
 }
 
+/* Badge Status Ready Stock vs Pre Order & Estimasi Pengiriman */
+.pcard-badge-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-bottom: 6px;
+  flex-wrap: wrap;
+}
+.pcard-status-badge {
+  font-size: 9.5px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  padding: 2px 7px;
+  border-radius: 99px;
+  text-transform: uppercase;
+  display: inline-flex;
+  align-items: center;
+}
+.pcard-status-badge.badge-ready {
+  background: rgba(16, 185, 129, 0.22);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.45);
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.25);
+}
+.pcard-status-badge.badge-po {
+  background: rgba(168, 85, 247, 0.22);
+  color: #e9d5ff;
+  border: 1px solid rgba(168, 85, 247, 0.45);
+  box-shadow: 0 0 10px rgba(168, 85, 247, 0.25);
+}
+.pcard-est-badge {
+  font-size: 9.5px;
+  color: rgba(255, 255, 255, 0.88);
+  font-weight: 600;
+}
+
 .pcard h3 {
   font: 700 15px var(--card-body);
   letter-spacing: .005em;
@@ -1716,6 +1778,14 @@ h2 {
   font-size: 10.5px;
   white-space: nowrap;
   flex-shrink: 0;
+}
+.stock.stock--po {
+  color: #e9d5ff;
+  font-weight: 700;
+}
+.stock.sold-out {
+  color: #f87171;
+  font-weight: 800;
 }
 
 /* Tombol Aksi di Bawah Kartu */
@@ -3631,7 +3701,7 @@ body:has(.beranda-stage-viewport) footer {
 }
 
 /* ═══════════════════════════════════════
-   FLOATING WHATSAPP ADMIN BUTTON
+   FLOATING LINE ADMIN BUTTON
 ═══════════════════════════════════════ */
 .wa-float-container {
   position: fixed;
@@ -3639,28 +3709,31 @@ body:has(.beranda-stage-viewport) footer {
   right: 28px;
   z-index: 99;
 }
-.wa-float-btn {
+.wa-float-btn,
+.line-float-btn {
   position: relative;
   width: 56px;
   height: 56px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #25d366 0%, #128c7e 100%);
+  background: linear-gradient(135deg, #06c755 0%, #05a847 100%);
   color: #ffffff;
   display: grid;
   place-items: center;
-  box-shadow: 0 8px 24px rgba(37, 211, 102, 0.42), 0 4px 10px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 8px 24px rgba(6, 199, 85, 0.45), 0 4px 10px rgba(0, 0, 0, 0.4);
   text-decoration: none;
   transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.25s;
 }
-.wa-float-btn:hover {
+.wa-float-btn:hover,
+.line-float-btn:hover {
   transform: scale(1.08);
-  box-shadow: 0 12px 32px rgba(37, 211, 102, 0.6), 0 6px 14px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 12px 32px rgba(6, 199, 85, 0.65), 0 6px 14px rgba(0, 0, 0, 0.5);
 }
-.wa-float-pulse {
+.wa-float-pulse,
+.line-float-pulse {
   position: absolute;
   inset: -4px;
   border-radius: 50%;
-  border: 2px solid rgba(37, 211, 102, 0.65);
+  border: 2px solid rgba(6, 199, 85, 0.7);
   animation: waPulse 2.4s ease-out infinite;
   pointer-events: none;
 }
@@ -3674,8 +3747,8 @@ body:has(.beranda-stage-viewport) footer {
   right: calc(100% + 12px);
   top: 50%;
   transform: translateY(-50%);
-  background: rgba(18, 12, 46, 0.92);
-  border: 1px solid rgba(37, 211, 102, 0.4);
+  background: rgba(18, 12, 46, 0.94);
+  border: 1px solid rgba(6, 199, 85, 0.5);
   color: #fff;
   font-size: 12px;
   font-weight: 700;
@@ -3687,7 +3760,8 @@ body:has(.beranda-stage-viewport) footer {
   transition: opacity 0.2s, transform 0.2s;
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
 }
-.wa-float-btn:hover .wa-float-tooltip {
+.wa-float-btn:hover .wa-float-tooltip,
+.line-float-btn:hover .wa-float-tooltip {
   opacity: 1;
   transform: translateY(-50%) translateX(-4px);
 }
@@ -3696,11 +3770,13 @@ body:has(.beranda-stage-viewport) footer {
     bottom: calc(108px + env(safe-area-inset-bottom, 0px));
     right: 14px;
   }
-  .wa-float-btn {
+  .wa-float-btn,
+  .line-float-btn {
     width: 42px;
     height: 42px;
   }
-  .wa-float-btn svg {
+  .wa-float-btn svg,
+  .line-float-btn svg {
     width: 22px;
     height: 22px;
   }
@@ -3891,7 +3967,29 @@ body:has(.beranda-stage-viewport) footer {
 ═══════════════════════════════════════ */
 body:has(.main--no-nav) {
   overflow-x: hidden;
-  background: #0d0a1c !important;
+  background: linear-gradient(
+    180deg,
+    #2a1d75 0%,
+    #35297f 4%,
+    #575497 8%,
+    #7b7eb1 12%,
+    #9ca9c9 16%,
+    #c7ddea 20.5%,
+    #b9c8e7 27%,
+    #abb1e3 35%,
+    #9a98e1 43%,
+    #8576dd 55%,
+    #735dd9 62%,
+    #6a4ed6 67.5%,
+    #877add 72%,
+    #a5a9e4 75%,
+    #c6dce9 79%,
+    #a8b8d4 84%,
+    #8289b8 88%,
+    #5f5e9e 92%,
+    #3a3085 96%,
+    #2b1e78 100%
+  ) !important;
   padding-bottom: 0 !important;
   min-height: 100vh;
   min-height: 100dvh;
@@ -4182,14 +4280,16 @@ body:has(.main--no-nav) footer,
   color: rgba(255, 255, 255, 0.82);
   margin: 0;
 }
-.wa-btn {
-  background: #25d366;
+.wa-btn,
+.line-btn {
+  background: #06c755;
   color: #ffffff;
   font-weight: 800;
 }
-.wa-btn:hover {
-  background: #20bd5a;
-  box-shadow: 0 8px 24px rgba(37, 211, 102, 0.4);
+.wa-btn:hover,
+.line-btn:hover {
+  background: #05b04b;
+  box-shadow: 0 8px 24px rgba(6, 199, 85, 0.45);
 }
 .checkout-stage--centered,
 .main--no-nav:has(.checkout-success-card) .stage,
@@ -4344,17 +4444,20 @@ body:has(.main--no-nav) footer,
   height: 20px !important;
   flex-shrink: 0;
 }
-.checkout-success-card .success-cta .wa-btn {
-  background: #25d366 !important;
+.checkout-success-card .success-cta .wa-btn,
+.checkout-success-card .success-cta .line-btn {
+  background: #06c755 !important;
   color: #ffffff !important;
-  box-shadow: 0 6px 20px rgba(37, 211, 102, 0.35) !important;
+  box-shadow: 0 6px 20px rgba(6, 199, 85, 0.4) !important;
 }
-.checkout-success-card .success-cta .wa-btn:hover {
-  background: #20bd5a !important;
-  box-shadow: 0 8px 24px rgba(37, 211, 102, 0.45) !important;
+.checkout-success-card .success-cta .wa-btn:hover,
+.checkout-success-card .success-cta .line-btn:hover {
+  background: #05b04b !important;
+  box-shadow: 0 8px 26px rgba(6, 199, 85, 0.55) !important;
   transform: translateY(-1px);
 }
-.checkout-success-card .success-cta .wa-btn:active {
+.checkout-success-card .success-cta .wa-btn:active,
+.checkout-success-card .success-cta .line-btn:active {
   transform: scale(0.98);
 }
 .checkout-success-card .success-cta .btn.ghost {
@@ -4369,6 +4472,68 @@ body:has(.main--no-nav) footer,
 }
 .checkout-success-card .success-cta .btn.ghost:active {
   transform: scale(0.98);
+}
+
+/* Keterangan Estimasi Pengiriman di Success Card */
+.delivery-est-banner {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+}
+.delivery-note {
+  font-size: 12px;
+  line-height: 1.5;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-align: left;
+  color: rgba(255, 255, 255, 0.9);
+}
+.delivery-badge-pill {
+  padding: 2px 8px;
+  border-radius: 99px;
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  flex-shrink: 0;
+  text-transform: uppercase;
+}
+.delivery-badge-pill.ready {
+  background: rgba(16, 185, 129, 0.2);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.45);
+}
+.delivery-badge-pill.po {
+  background: rgba(168, 85, 247, 0.2);
+  color: #d8b4fe;
+  border: 1px solid rgba(168, 85, 247, 0.45);
+}
+
+/* Item Status Tags di Ringkasan Checkout */
+.item-status-tags-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+.checkout-status-pill {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 1.5px 7px;
+  border-radius: 5px;
+  letter-spacing: 0.01em;
+}
+.checkout-status-pill.ready {
+  background: rgba(16, 185, 129, 0.18);
+  color: #6ee7b7;
+  border: 1px solid rgba(16, 185, 129, 0.35);
+}
+.checkout-status-pill.po {
+  background: rgba(168, 85, 247, 0.18);
+  color: #e9d5ff;
+  border: 1px solid rgba(168, 85, 247, 0.35);
 }
 
 /* ═══════════════════════════════════════
@@ -6204,20 +6369,36 @@ section[id] { scroll-margin-top: 96px; }
   pointer-events: none;
   z-index: -1;
   overflow: hidden;
-  background: radial-gradient(ellipse at 50% 20%, #161133 0%, #0c091a 60%, #070510 100%);
+  background: linear-gradient(
+    180deg,
+    #2a1d75 0%,
+    #35297f 4%,
+    #575497 8%,
+    #7b7eb1 12%,
+    #9ca9c9 16%,
+    #c7ddea 20.5%,
+    #b9c8e7 27%,
+    #abb1e3 35%,
+    #9a98e1 43%,
+    #8576dd 55%,
+    #735dd9 62%,
+    #6a4ed6 67.5%,
+    #877add 72%,
+    #a5a9e4 75%,
+    #c6dce9 79%,
+    #a8b8d4 84%,
+    #8289b8 88%,
+    #5f5e9e 92%,
+    #3a3085 96%,
+    #2b1e78 100%
+  );
   contain: strict;
   transform: translateZ(0);
 }
 
 /* Luminous fluid aurora curtains */
 .aurora-curtain {
-  position: absolute;
-  pointer-events: none;
-  filter: blur(35px);
-  mix-blend-mode: screen;
-  will-change: transform;
-  transform: translate3d(0, 0, 0);
-  contain: paint;
+  display: none !important;
 }
 
 /* Curtain 1: Emerald Teal & Polar Cyan (Signature Aurora Borealis wave) */
@@ -6891,6 +7072,26 @@ body:has(.katalog-stage-viewport) footer {
   }
   .katalog-row-cards .pcard .pcard-header-block {
     margin-bottom: 3px;
+  }
+  .katalog-row-cards .pcard .pcard-badge-row {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 2px !important;
+    margin-bottom: 2px !important;
+    flex-wrap: nowrap !important;
+  }
+  .katalog-row-cards .pcard .pcard-status-badge {
+    font-size: 7.5px !important;
+    padding: 1px 5px !important;
+    border-radius: 99px !important;
+    letter-spacing: 0.02em !important;
+  }
+  .katalog-row-cards .pcard .pcard-est-badge {
+    font-size: 7.5px !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
   }
   .katalog-row-cards .pcard h3 {
     font-size: 11px;

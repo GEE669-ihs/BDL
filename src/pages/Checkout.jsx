@@ -8,15 +8,19 @@ const ONGKIR = 15000
 const GRATIS_ONGKIR = 200000
 
 export default function Checkout() {
-  const { items, cart, total, clear, remove } = useApp()
+  const { items, cart, total, clear, remove, reduceSlots } = useApp()
   const navigate = useNavigate()
   const [form, setForm] = useState({ nama: '', wa: '', alamat: '', kota: '', kodepos: '' })
   const [submitted, setSubmitted] = useState(false)
   const [orderId] = useState(() => 'GCZ-' + Date.now().toString(36).toUpperCase())
-  const [orderSummaryWa, setOrderSummaryWa] = useState('')
+  const [orderSummaryLine, setOrderSummaryLine] = useState('')
+  const [hasPoItems, setHasPoItems] = useState(false)
 
   const ongkir = total >= GRATIS_ONGKIR ? 0 : ONGKIR
   const grandTotal = total + ongkir
+
+  // Tentukan apakah pesanan mengandung item Pre Order atau full Ready Stock
+  const hasPreOrder = items.some(c => c.status === 'Pre Order')
 
   const handleBack = () => {
     navigate('/katalog')
@@ -26,25 +30,42 @@ export default function Checkout() {
 
   const submit = (e) => {
     e.preventDefault()
-    // Siapkan pesan WA sebelum keranjang di-clear
-    const waMessage = encodeURIComponent(
-      `Halo Admin GO Closerz!\n\nNomor Order: *${orderId}*\nNama: ${form.nama}\nWA: ${form.wa}\nAlamat: ${form.alamat}, ${form.kota} ${form.kodepos}\n\nPesanan:\n` +
-      items.map(c => `- ${c.name} (${c.group}) × ${cart[c.id]} = ${money(c.price * cart[c.id])}`).join('\n') +
-      `\n\nOngkir: ${ongkir === 0 ? 'GRATIS' : money(ongkir)}\nTotal: *${money(grandTotal)}*`
-    )
-    setOrderSummaryWa(waMessage)
+
+    const orderItems = items.map(c => ({ ...c, qty: cart[c.id] }))
+    setHasPoItems(hasPreOrder)
+
+    // Siapkan ringkasan order
+    const summary =
+      `Halo Admin GO Closerz!\n\n` +
+      `Saya ingin konfirmasi pesanan photocard:\n` +
+      `ID Pesanan: *${orderId}*\n` +
+      `Nama: ${form.nama}\n` +
+      `Kontak: ${form.wa}\n` +
+      `Alamat: ${form.alamat}, ${form.kota} ${form.kodepos}\n\n` +
+      `Pesanan:\n` +
+      orderItems.map(c => `- ${c.name} (${c.group} · ${c.status}) × ${c.qty} = ${money(c.price * c.qty)}`).join('\n') +
+      `\n\nOngkir: ${ongkir === 0 ? 'GRATIS' : money(ongkir)}\n` +
+      `Total: *${money(grandTotal)}*\n` +
+      `DP 50%: *${money(Math.round(grandTotal / 2))}*\n\n` +
+      `Estimasi: ${hasPreOrder ? 'Menunggu ~3-4 minggu (PO)' : 'Pengiriman cepat 3-4 hari (Ready Stock)'}`
+
+    setOrderSummaryLine(summary)
+
+    // Kurangi kuota sisa slot photocard di katalog sesuai jumlah yang di-checkout
+    reduceSlots(orderItems)
 
     // Simpan order ke localStorage
-    const order = { id: orderId, items: items.map(c => ({ ...c, qty: cart[c.id] })), form, total: grandTotal, createdAt: Date.now() }
+    const order = { id: orderId, items: orderItems, form, total: grandTotal, hasPreOrder, createdAt: Date.now() }
     const orders = JSON.parse(localStorage.getItem('gc_orders') || '[]')
     orders.push(order)
     localStorage.setItem('gc_orders', JSON.stringify(orders))
+
     clear()
     setSubmitted(true)
   }
 
-  // Admin WhatsApp resmi GO Closerz (nomor terpusat sama dengan WhatsAppAdmin)
-  const ADMIN_PHONE = '628881815063'
+  // Akun LINE resmi Admin GO Closerz
+  const LINE_ADMIN_URL = 'https://line.me/ti/p/DXxrMczHYq'
 
   if (items.length === 0 && !submitted) {
     return (
@@ -88,22 +109,37 @@ export default function Checkout() {
             <div className="order-instruction-box">
               <h4>Langkah Konfirmasi Selanjutnya:</h4>
               <ol>
-                <li>Kirim rincian order ke admin via WhatsApp melalui tombol di bawah.</li>
-                <li>Lakukan transfer DP 50% ({money(Math.round(grandTotal / 2))}) ke rekening admin yang tertera di chat WA.</li>
-                <li>Admin akan memverifikasi dan mengirimkan bukti slot photocard resmimu.</li>
+                <li>Kirim rincian order ke admin via LINE melalui tombol di bawah.</li>
+                <li>Lakukan transfer DP 50% ({money(Math.round(grandTotal / 2))}) atau Lunas ke rekening admin yang tertera di chat LINE.</li>
+                <li>Admin LINE akan memverifikasi dan mengirimkan bukti slot photocard resmimu.</li>
               </ol>
+
+              {/* Keterangan estimasi pengiriman sesuai status photocard */}
+              <div className="delivery-est-banner">
+                {hasPoItems ? (
+                  <p className="delivery-note po-note">
+                    <span className="delivery-badge-pill po">Pre Order</span>
+                    <span>Estimasi pengiriman: Menunggu sekitar <strong>3-4 minggu</strong> setelah periode PO ditutup.</span>
+                  </p>
+                ) : (
+                  <p className="delivery-note ready-note">
+                    <span className="delivery-badge-pill ready">Ready Stock</span>
+                    <span>Estimasi pengiriman lebih cepat: Sekitar <strong>3-4 hari kerja</strong> langsung diproses.</span>
+                  </p>
+                )}
+              </div>
             </div>
             <div className="cta success-cta">
               <a
-                className="btn wa-btn"
-                href={`https://wa.me/${ADMIN_PHONE}?text=${orderSummaryWa}`}
+                className="btn line-btn"
+                href={LINE_ADMIN_URL}
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" style={{ marginRight: '6px' }}>
-                  <path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.711 2.598 2.664-.698c.969.585 1.961.944 2.796.944h.005c3.179 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.77-5.773-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.312.045-.694.072-2.128-.521-1.615-.668-2.673-2.316-2.753-2.424-.08-.108-.66-.878-.66-1.674 0-.796.417-1.189.566-1.349.149-.16.326-.2.434-.2.108 0 .216.001.311.006.1.006.234-.038.366.28.138.334.469 1.144.51 1.228.042.085.07.184.014.296-.056.113-.085.184-.17.283-.085.1-.179.223-.255.3-.085.085-.174.179-.075.35.099.171.442.729.948 1.18.652.581 1.202.761 1.373.846.17.085.27.071.37-.043.1-.114.426-.496.54-.666.113-.17.227-.142.383-.085.156.057.994.469 1.164.554.17.085.284.128.326.199.043.071.043.412-.101.817z" />
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" style={{ marginRight: '8px' }}>
+                  <path d="M19.365 9.863c.349.001.63.284.63.633 0 .348-.281.631-.63.632h-2.148v1.393h2.148c.349.001.63.284.63.633 0 .348-.281.631-.63.632h-2.778a.633.633 0 0 1-.63-.632V8.471c0-.349.281-.632.63-.632h2.778c.349 0 .63.283.63.632 0 .349-.281.632-.63.632h-2.148v1.392h2.148v-.632zm-4.708 3.29h-.001c-.167 0-.327-.066-.446-.184l-2.029-2.883v2.435c0 .348-.281.632-.63.632-.349 0-.63-.284-.63-.632V8.471c0-.203.097-.393.262-.511a.635.635 0 0 1 .593-.056c.078.037.148.093.204.164l2.046 2.907V8.471c0-.349.281-.632.63-.632.35 0 .631.283.631.632v4.05c0 .349-.281.632-.63.632zm-6.273 0c-.349 0-.63-.284-.63-.632V8.471c0-.349.281-.632.63-.632.349 0 .63.283.63.632v4.05c0 .348-.281.632-.63.632zm-3.08 0H3.125a.633.633 0 0 1-.63-.632V8.471c0-.349.281-.632.63-.632.349 0 .63.283.63.632v3.418h1.519c.349.001.63.284.63.633 0 .348-.281.631-.63.632zM24 10.314C24 4.943 18.615.572 12 .572S0 4.943 0 10.314c0 4.811 4.27 8.842 10.035 9.608.391.084.922.258 1.057.592.121.303.079.779.039 1.085l-.171 1.026c-.053.308-.242 1.209 1.057.66 1.3-.551 7.009-4.128 9.563-7.067C23.064 14.512 24 12.518 24 10.314" />
                 </svg>
-                <span>Konfirmasi via WhatsApp</span>
+                <span>Konfirmasi via LINE</span>
               </a>
               <button className="btn ghost" onClick={() => navigate('/beranda')}>
                 Kembali ke Beranda
@@ -165,7 +201,7 @@ export default function Checkout() {
               ))}
 
               <button type="submit" className="btn primary wide checkout-submit-btn">
-                <span>Konfirmasi & Lanjut ke WhatsApp →</span>
+                <span>Konfirmasi & Lanjut ke LINE →</span>
               </button>
             </form>
           </div>
@@ -185,7 +221,12 @@ export default function Checkout() {
                     <div className="item-names">
                       <strong>{c.name}</strong>
                       <small>{c.group} · {c.type}</small>
-                      <span className="item-qty-tag">Jumlah: {cart[c.id]} kartu</span>
+                      <div className="item-status-tags-row">
+                        <span className={`checkout-status-pill ${c.status === 'Ready Stock' ? 'ready' : 'po'}`}>
+                          {c.status === 'Ready Stock' ? '⚡ Ready Stock (Kirim 3-4 hari)' : '⏳ Pre Order (Tiba 3-4 minggu)'}
+                        </span>
+                        <span className="item-qty-tag">Jumlah: {cart[c.id]} kartu</span>
+                      </div>
                     </div>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -235,7 +276,9 @@ export default function Checkout() {
                 <strong>{money(Math.round(grandTotal / 2))}</strong>
               </div>
               <p>
-                Sistem Group Order K-Pop: Kamu hanya perlu membayar DP 50% di muka. Sisa pelunasan 50% dilakukan saat photocard resmi tiba di Indonesia (~3-4 minggu).
+                {hasPreOrder
+                  ? 'Sistem Group Order K-Pop: Kamu dapat membayar DP 50% di muka atau langsung lunas. Photocard berstatus Pre Order (PO) memerlukan waktu sekitar ~3-4 minggu setelah PO tutup.'
+                  : 'Pesanan kamu seluruhnya Ready Stock: Pengiriman lebih cepat sekitar 3-4 hari kerja langsung diproses setelah konfirmasi admin LINE!'}
               </p>
             </div>
           </div>

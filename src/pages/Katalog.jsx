@@ -31,7 +31,7 @@ const BAND_MENU = [
 
 /* ---------- Komponen Kartu Photocard Katalog ---------- */
 const CatalogCard = memo(function CatalogCard({ card, index = 0 }) {
-  const { add } = useApp()
+  const { add, getCardSlot } = useApp()
   const ref = useRef(null)
   const [qty, setQty] = useState(1)
   const [added, setAdded] = useState(false)
@@ -39,6 +39,11 @@ const CatalogCard = memo(function CatalogCard({ card, index = 0 }) {
   const rectRef = useRef(null)
   const mousePos = useRef({ x: 0, y: 0 })
   const isHovered = useRef(false)
+
+  const currentStock = getCardSlot ? getCardSlot(card.id) : card.stock
+  const soldOut = currentStock <= 0
+  const isReadyStock = card.status === 'Ready Stock'
+  const tone = card.tone || GROUP_TONES[card.group] || 'aurora'
 
   const handleMouseEnter = () => {
     isHovered.current = true
@@ -108,9 +113,6 @@ const CatalogCard = memo(function CatalogCard({ card, index = 0 }) {
     }
   }
 
-  const soldOut = card.stock === 0
-  const tone = card.tone || GROUP_TONES[card.group] || 'aurora'
-
   return (
     <article
       className="pcard"
@@ -129,17 +131,35 @@ const CatalogCard = memo(function CatalogCard({ card, index = 0 }) {
       {/* Info & Tombol Aksi Photocard */}
       <div className="pcard-info">
         <div className="pcard-header-block">
+          {/* Badge Status (Ready Stock / Pre Order) & Estimasi Pengiriman */}
+          <div className="pcard-badge-row">
+            <span className={`pcard-status-badge ${isReadyStock ? 'badge-ready' : 'badge-po'}`}>
+              {isReadyStock ? 'Ready Stock' : 'Pre Order'}
+            </span>
+            <span className="pcard-est-badge">
+              {isReadyStock ? '⚡ Kirim 3-4 hari' : '⏳ PO ~3-4 minggu'}
+            </span>
+          </div>
+
           <h3>{card.name} · {card.group}</h3>
           <p className="meta">
             <span className="card-type-text">{card.type}</span>
-            <span className="stock">{soldOut ? 'Habis' : `Sisa ${card.stock} slot`}</span>
+            {isReadyStock ? (
+              <span className={`stock ${soldOut ? 'sold-out' : ''}`}>
+                {soldOut ? 'Slot Habis' : `Sisa ${currentStock} slot kartu`}
+              </span>
+            ) : (
+              <span className="stock stock--po">
+                {soldOut ? 'Slot Habis' : 'Pre Order (PO)'}
+              </span>
+            )}
           </p>
         </div>
 
         <div className="pcard-action-block">
           <div className="row">
             <div className="price-group">
-              <span className="price-tag">Harga PO</span>
+              <span className="price-tag">{isReadyStock ? 'Harga' : 'Harga PO'}</span>
               <strong className="price-val">{money(card.price)}</strong>
             </div>
             <span className="qty" aria-label="Jumlah pesanan kartu">
@@ -152,8 +172,8 @@ const CatalogCard = memo(function CatalogCard({ card, index = 0 }) {
               <span className="qty-num">{qty}</span>
               <button
                 type="button"
-                onClick={() => setQty((q) => Math.min(card.stock || 1, q + 1))}
-                disabled={soldOut || qty >= (card.stock || 1)}
+                onClick={() => setQty((q) => Math.min(currentStock || 1, q + 1))}
+                disabled={soldOut || qty >= (currentStock || 1)}
                 aria-label="Tambah jumlah kartu"
               >+</button>
             </span>
