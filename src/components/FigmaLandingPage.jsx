@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useApp } from '../context/AppContext'
 import FigmaCardFan from './FigmaCardFan'
@@ -7,145 +7,15 @@ import './FigmaLandingPage.css'
 // Local Assets downloaded from Figma
 import heroBgImg from '../assets/figma/hero-bg.png'
 import userAvatarImg from '../assets/figma/user-avatar.png'
-import dotSvg from '../assets/figma/dot.svg'
 
 // PO Deadline
 const PO_TARGET_DATE = new Date('2026-11-28T23:59:59+07:00')
-
-// 12 Photocard Catalog Data matching Figma Node 1:104
-const FIGMA_CATALOG_CARDS = [
-  // Row 1 - NOVA7
-  {
-    id: 101,
-    name: 'Kai-R',
-    group: 'NOVA7',
-    edition: 'Fotokard Album Ver. A',
-    slots: 12,
-    price: 18000,
-    gradient: 'linear-gradient(180deg, #7dc8ff 0%, #d7b8ff 100%)',
-    bg: '#6a4fd6',
-  },
-  {
-    id: 102,
-    name: 'Jiho',
-    group: 'NOVA7',
-    edition: 'Fotokard Album Ver. A',
-    slots: 8,
-    price: 18000,
-    gradient: 'linear-gradient(180deg, #7dc8ff 0%, #d7b8ff 100%)',
-    bg: '#4d3cad',
-  },
-  {
-    id: 103,
-    name: 'Sen',
-    group: 'NOVA7',
-    edition: 'Lucky Draw Edisi Silver',
-    slots: 3,
-    price: 45000,
-    gradient: 'linear-gradient(180deg, #b8cde6 0%, #8ca9d3 100%)',
-    bg: '#334155',
-  },
-  {
-    id: 104,
-    name: 'Rei',
-    group: 'NOVA7',
-    edition: 'Fotokard Album Ver. B',
-    slots: 0,
-    price: 18000,
-    gradient: 'linear-gradient(180deg, #d1d5db 0%, #9ca3af 100%)',
-    bg: '#4b5563',
-  },
-
-  // Row 2 - LUNAR GIRLS
-  {
-    id: 105,
-    name: 'Yuna',
-    group: 'LUNAR GIRLS',
-    edition: 'Fotokard Album Ver. A',
-    slots: 10,
-    price: 20000,
-    gradient: 'linear-gradient(180deg, #ff7ccb 0%, #c7dde9 100%)',
-    bg: '#701a75',
-  },
-  {
-    id: 106,
-    name: 'Hana',
-    group: 'LUNAR GIRLS',
-    edition: 'POB Makestar Hologram',
-    slots: 4,
-    price: 35000,
-    gradient: 'linear-gradient(180deg, #f472b6 0%, #818cf8 100%)',
-    bg: '#831843',
-  },
-  {
-    id: 107,
-    name: 'Soo',
-    group: 'LUNAR GIRLS',
-    edition: 'Fotokard Album Ver. B',
-    slots: 6,
-    price: 20000,
-    gradient: 'linear-gradient(180deg, #fbcfe8 0%, #a78bfa 100%)',
-    bg: '#581c87',
-  },
-  {
-    id: 108,
-    name: 'Eun',
-    group: 'LUNAR GIRLS',
-    edition: 'Lucky Draw Pink Heart',
-    slots: 2,
-    price: 40000,
-    gradient: 'linear-gradient(180deg, #fb7185 0%, #e879f9 100%)',
-    bg: '#9d174d',
-  },
-
-  // Row 3 - STELLA-9
-  {
-    id: 109,
-    name: 'Mira',
-    group: 'STELLA-9',
-    edition: 'Fotokard Album Ver. A',
-    slots: 9,
-    price: 22000,
-    gradient: 'linear-gradient(180deg, #889fce 0%, #1a1040 100%)',
-    bg: '#1e1b4b',
-  },
-  {
-    id: 110,
-    name: 'Dami',
-    group: 'STELLA-9',
-    edition: 'Fansign Event Benefit',
-    slots: 1,
-    price: 50000,
-    gradient: 'linear-gradient(180deg, #38bdf8 0%, #6366f1 100%)',
-    bg: '#0c4a6e',
-  },
-  {
-    id: 111,
-    name: 'Rin',
-    group: 'STELLA-9',
-    edition: 'Fotokard Album Ver. B',
-    slots: 7,
-    price: 22000,
-    gradient: 'linear-gradient(180deg, #818cf8 0%, #312e81 100%)',
-    bg: '#312e81',
-  },
-  {
-    id: 112,
-    name: 'Nari',
-    group: 'STELLA-9',
-    edition: 'Special Edition Glitter',
-    slots: 5,
-    price: 38000,
-    gradient: 'linear-gradient(180deg, #fcd34d 0%, #f43f5e 100%)',
-    bg: '#78350f',
-  },
-]
 
 // FAQ Items matching Figma Node 1:144
 const FIGMA_FAQ_ITEMS = [
   {
     q: 'Apakah photocard dijamin official?',
-    a: 'Ya, semua kartu berasal dari album dan merchandise resmi. Kami tidak menjual fotokopi atau unofficial.',
+    a: 'Ya, semua kartu berasal dari album dan merchandise resmi Close Your Eyes (CYE). Kami tidak menjual fotokopi atau unofficial.',
   },
   {
     q: 'Bisa batal setelah bayar DP?',
@@ -163,7 +33,16 @@ const FIGMA_FAQ_ITEMS = [
 
 export default function FigmaLandingPage() {
   const navigate = useNavigate()
-  const { cart, count, add, setCartOpen, user, logout } = useApp()
+  const {
+    cart,
+    count,
+    add,
+    user,
+    logout,
+    groups,
+    catalogCards,
+    getCardSlot,
+  } = useApp()
 
   // Sticky Navbar state
   const [isScrolled, setIsScrolled] = useState(false)
@@ -206,10 +85,10 @@ export default function FigmaLandingPage() {
     }
   }
 
-  const handleQtyChange = (cardId, delta) => {
+  const handleQtyChange = (cardId, delta, maxAvailable) => {
     setCardQtys((prev) => {
       const current = prev[cardId] || 1
-      const next = Math.max(1, Math.min(10, current + delta))
+      const next = Math.max(1, Math.min(maxAvailable || 10, current + delta))
       return { ...prev, [cardId]: next }
     })
   }
@@ -222,6 +101,9 @@ export default function FigmaLandingPage() {
         name: card.name,
         group: card.group,
         type: card.edition,
+        edition: card.edition,
+        status: card.status || 'Ready Stock',
+        image: card.image,
         price: card.price,
         stock: card.slots,
       },
@@ -236,11 +118,16 @@ export default function FigmaLandingPage() {
     }
   }
 
-  // Filtered Cards
+  // Dynamic filter options based on Admin groups ("Semua", "CYE", + any added groups)
+  const filterOptions = ['Semua', ...groups.map((g) => g.name)]
+
+  // Filtered Cards matching current selection
   const displayedCards =
     selectedFilter === 'Semua'
-      ? FIGMA_CATALOG_CARDS
-      : FIGMA_CATALOG_CARDS.filter((c) => c.group === selectedFilter)
+      ? catalogCards
+      : catalogCards.filter(
+        (c) => (c.group || '').toUpperCase() === selectedFilter.toUpperCase()
+      )
 
   return (
     <div className="figma-landing" data-node-id="1:20">
@@ -251,20 +138,20 @@ export default function FigmaLandingPage() {
         <div className="figma-ticker-track">
           <span className="figma-ticker-item">✧ REALPICT</span>
           <span className="figma-ticker-item">★ 100% OFFICIAL</span>
-          <span className="figma-ticker-item">✦ OPEN PO BATCH KR</span>
+          <span className="figma-ticker-item">✧ OPEN PO BATCH KR</span>
           <span className="figma-ticker-item">♡ INCLUDE GARANSI</span>
           <span className="figma-ticker-item">✧ REALPICT</span>
           <span className="figma-ticker-item">★ 100% OFFICIAL</span>
-          <span className="figma-ticker-item">✦ OPEN PO BATCH CN</span>
+          <span className="figma-ticker-item">✧ OPEN PO BATCH CN</span>
           <span className="figma-ticker-item">♡ INCLUDE GARANSI</span>
           {/* Duplicate track for seamless loop */}
           <span className="figma-ticker-item">✧ REALPICT</span>
           <span className="figma-ticker-item">★ 100% OFFICIAL</span>
-          <span className="figma-ticker-item">✦ OPEN PO BATCH KR</span>
+          <span className="figma-ticker-item">✧ OPEN PO BATCH KR</span>
           <span className="figma-ticker-item">♡ INCLUDE GARANSI</span>
           <span className="figma-ticker-item">✧ REALPICT</span>
           <span className="figma-ticker-item">★ 100% OFFICIAL</span>
-          <span className="figma-ticker-item">✦ OPEN PO BATCH CN</span>
+          <span className="figma-ticker-item">✧ OPEN PO BATCH CN</span>
           <span className="figma-ticker-item">♡ INCLUDE GARANSI</span>
         </div>
       </aside>
@@ -275,7 +162,11 @@ export default function FigmaLandingPage() {
       <header className={`figma-nav ${isScrolled ? 'is-scrolled' : ''}`} data-node-id="1:32">
         <div className="figma-nav-inner">
           {/* Logo */}
-          <div className="figma-logo" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} data-node-id="1:33">
+          <div
+            className="figma-logo"
+            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+            data-node-id="1:33"
+          >
             <span className="figma-logo-g" data-node-id="1:34">G</span>
             <span className="figma-logo-star" data-node-id="1:35">★</span>
             <span className="figma-logo-closerz" data-node-id="1:36">Closerz</span>
@@ -306,6 +197,14 @@ export default function FigmaLandingPage() {
               data-node-id="1:39"
             >
               FAQ
+            </button>
+            <button
+              type="button"
+              className="figma-nav-link figma-admin-link"
+              onClick={() => navigate('/admin')}
+              title="Dashboard Admin Kelola Grup & Photocard"
+            >
+              Admin
             </button>
           </nav>
 
@@ -428,6 +327,7 @@ export default function FigmaLandingPage() {
 
       {/* ─────────────────────────────────────────────────────────────
           4. KATALOG PO (Node 1:92)
+          Exact Figma Layout, Color Palette & Template Structure
           ───────────────────────────────────────────────────────────── */}
       <section className="figma-katalog" id="figma-katalog" data-node-id="1:92">
         <div className="figma-section-inner">
@@ -436,9 +336,9 @@ export default function FigmaLandingPage() {
             Semua kartu adalah pre-order resmi dengan jaminan keaslian 100%.
           </p>
 
-          {/* Filter Chips (Node 1:95) */}
+          {/* Dynamic Filter Chips (Node 1:95) */}
           <div className="figma-filters" role="tablist" aria-label="Filter Grup" data-node-id="1:95">
-            {['Semua', 'NOVA7', 'LUNAR GIRLS', 'STELLA-9'].map((filterName) => (
+            {filterOptions.map((filterName) => (
               <button
                 key={filterName}
                 type="button"
@@ -452,57 +352,96 @@ export default function FigmaLandingPage() {
             ))}
           </div>
 
-          {/* 12 Photocard Grid (Node 1:104) */}
+          {/* Photocard Grid (Node 1:104) with Exact Figma Card Template */}
           <div className="figma-grid" data-node-id="1:104">
-            {displayedCards.map((card) => {
+            {displayedCards.map((card, idx) => {
+              const isPO = card.status === 'Pre-Order'
+              const currentSlots = getCardSlot(card.id)
               const qty = cardQtys[card.id] || 1
-              const isOutOfStock = card.slots <= 0
+              // Kartu Pre-Order selalu bisa dipesan tanpa dibatasi slot habis
+              const isOutOfStock = !isPO && currentSlots <= 0
 
               return (
-                <article className="figma-card" key={card.id}>
-                  {/* Artwork Container */}
+                <article
+                  className="figma-card figma-card-dealing"
+                  key={`${selectedFilter}-${card.id}`}
+                  style={{ animationDelay: `${idx * 0.07}s` }}
+                >
+                  {/* Art Box (Node 3:68) */}
                   <div
                     className="figma-card-art"
-                    style={{ background: card.gradient }}
+                    style={{
+                      background: card.gradient || 'linear-gradient(180deg, #7dc8ff 0%, #d7b8ff 100%)',
+                    }}
+                    data-name="art"
                   >
-                    <span className="figma-card-art-star">✦</span>
-                    <div className="figma-card-art-info">
-                      <div className="figma-card-art-name">{card.name}</div>
-                      <div className="figma-card-art-group">{card.group}</div>
+                    {/* Member Photo Asset */}
+                    {card.image ? (
+                      <img
+                        src={card.image}
+                        alt={card.name}
+                        className="figma-card-art-img"
+                        loading="lazy"
+                      />
+                    ) : (
+                      <>
+                        <div className="figma-card-art-gradient" />
+                        <p className="figma-card-art-star">✦</p>
+                        <div className="figma-card-art-info">
+                          <p className="figma-card-art-name">{card.name}</p>
+                          <p className="figma-card-art-group">{card.group}</p>
+                        </div>
+                      </>
+                    )}
+                  </div>
+
+                  {/* Title (Node 3:72): Member · CYE */}
+                  <p className="figma-card-title">
+                    {card.name} · {card.group}
+                  </p>
+
+                  {/* Info: Version & Sisa Slot (Node 3:73) */}
+                  <div className="figma-card-meta" data-name="info">
+                    <p className="figma-card-version">{card.edition}</p>
+                    {isPO ? (
+                      /* Status Pre-Order: Hanya status Pre-Order, TIDAK ADA tulisan sisa slot */
+                      <p className="figma-card-slot is-po" title="Status Pre-Order">
+                        Pre-Order
+                      </p>
+                    ) : (
+                      /* Status Ready Stock: Tampilkan sisa slot */
+                      <p className={`figma-card-slot ${isOutOfStock ? 'is-empty' : ''}`}>
+                        {isOutOfStock ? 'Slot habis' : `Sisa ${currentSlots} slot`}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Price & Quantity Stepper (Node 3:76) */}
+                  <div className="figma-card-bottom-row" data-name="price-row">
+                    <div>
+                      <span className="figma-card-price-label">{isPO ? 'HARGA PO' : 'HARGA'}</span>
+                      <p className="figma-card-price">
+                        Rp{(card.price || 0).toLocaleString('id-ID')}
+                      </p>
                     </div>
-                  </div>
 
-                  {/* Card Title & Meta */}
-                  <h3 className="figma-card-title">{card.name} · {card.group}</h3>
-                  <div className="figma-card-meta">
-                    <span className="figma-card-version">{card.edition}</span>
-                    <span className={`figma-card-slot ${isOutOfStock ? 'is-empty' : ''}`}>
-                      {isOutOfStock ? 'Slot habis' : `Sisa ${card.slots} slot`}
-                    </span>
-                  </div>
-
-                  {/* Price & Quantity Row */}
-                  <div className="figma-card-bottom-row">
-                    <span className="figma-card-price">
-                      Rp{card.price.toLocaleString('id-ID')}
-                    </span>
-                    {!isOutOfStock && (
-                      <div className="figma-qty-control" aria-label="Jumlah Kartu">
+                    {(!isOutOfStock || isPO) && (
+                      <div className="figma-qty-control" data-name="qty">
                         <button
                           type="button"
                           className="figma-qty-btn"
-                          onClick={() => handleQtyChange(card.id, -1)}
+                          onClick={() => handleQtyChange(card.id, -1, isPO ? 99 : currentSlots)}
                           disabled={qty <= 1}
                           aria-label="Kurangi jumlah"
                         >
                           −
                         </button>
-                        <span className="figma-qty-val">{qty}</span>
+                        <p className="figma-qty-val">{qty}</p>
                         <button
                           type="button"
                           className="figma-qty-btn"
-                          onClick={() => handleQtyChange(card.id, 1)}
-                          disabled={qty >= card.slots}
+                          onClick={() => handleQtyChange(card.id, 1, isPO ? 99 : currentSlots)}
+                          disabled={!isPO && qty >= currentSlots}
                           aria-label="Tambah jumlah"
                         >
                           +
@@ -511,12 +450,13 @@ export default function FigmaLandingPage() {
                     )}
                   </div>
 
-                  {/* Action Button */}
+                  {/* Action Button: Pre-Order selalu bisa dipesan */}
                   <button
                     type="button"
-                    className="figma-card-add-btn"
+                    className={`figma-card-add-btn ${isOutOfStock ? 'is-empty' : ''}`}
                     onClick={() => handleAddToCart(card)}
                     disabled={isOutOfStock}
+                    data-name="button"
                   >
                     {isOutOfStock ? 'Slot habis' : 'Tambah ke keranjang'}
                   </button>

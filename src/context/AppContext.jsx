@@ -1,19 +1,80 @@
-import { createContext, useContext, useState } from 'react'
-import { FIGMA_CATALOG_CARDS } from '../data/figmaCatalog'
+import { createContext, useContext, useState, useEffect } from 'react'
+import { FIGMA_CATALOG_CARDS, DEFAULT_GROUPS } from '../data/figmaCatalog'
 
 const SESSION_KEY = 'closerz_user_session'
+const REGISTERED_USERS_KEY = 'closerz_registered_users'
 const SLOTS_STORAGE_KEY = 'closerz_card_slots'
+const GROUPS_STORAGE_KEY = 'closerz_admin_groups'
+const CARDS_STORAGE_KEY = 'closerz_admin_cards'
 
-const getInitialSlots = () => {
+const getInitialRegisteredUsers = () => {
+  try {
+    const saved = localStorage.getItem(REGISTERED_USERS_KEY)
+    if (saved) {
+      const parsed = JSON.parse(saved)
+      if (Array.isArray(parsed)) return parsed
+    }
+  } catch {}
+  return []
+}
+
+const getInitialGroups = () => {
+  try {
+    const saved = localStorage.getItem(GROUPS_STORAGE_KEY)
+    if (saved) {
+      const parsed = JSON.parse(saved)
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed
+    }
+  } catch {}
+  return DEFAULT_GROUPS
+}
+
+const getInitialCards = () => {
+  try {
+    const saved = localStorage.getItem(CARDS_STORAGE_KEY)
+    if (saved) {
+      const parsed = JSON.parse(saved)
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        // Sinkronkan status Pre-Order & Ready Stock untuk kartu default CYE
+        return parsed.map((c) => {
+          const defaultRef = FIGMA_CATALOG_CARDS.find((dc) => dc.id === c.id || dc.name?.toLowerCase() === c.name?.toLowerCase())
+          if (defaultRef) {
+            return {
+              ...c,
+              status: defaultRef.status,
+              image: defaultRef.image, // Selalu gunakan asset foto member terbaru yang valid
+              slots: defaultRef.status === 'Pre-Order' ? 99 : (c.slots !== undefined ? c.slots : defaultRef.slots),
+            }
+          }
+          return c
+        })
+      }
+    }
+  } catch {}
+  return FIGMA_CATALOG_CARDS
+}
+
+const getInitialSlots = (cards) => {
   try {
     const saved = localStorage.getItem(SLOTS_STORAGE_KEY)
     if (saved) {
       const parsed = JSON.parse(saved)
-      if (parsed && typeof parsed === 'object') return parsed
+      if (parsed && typeof parsed === 'object') {
+        const next = { ...parsed }
+        // Pastikan kartu Pre-Order slotnya tidak 0
+        cards.forEach((c) => {
+          if (c.status === 'Pre-Order') {
+            next[c.id] = 99
+          } else if (next[c.id] === undefined) {
+            next[c.id] = c.slots
+          }
+        })
+        return next
+      }
     }
   } catch {}
   const initial = {}
-  FIGMA_CATALOG_CARDS.forEach((c) => {
+  cards.forEach((c) => {
     initial[c.id] = c.slots
   })
   return initial
@@ -25,9 +86,7 @@ export function AppProvider({ children }) {
   const [user, setUser] = useState(() => {
     try {
       const saved = localStorage.getItem(SESSION_KEY)
-      if (saved) {
-        return JSON.parse(saved)
-      }
+      if (saved) return JSON.parse(saved)
     } catch {
       const raw = localStorage.getItem(SESSION_KEY)
       return raw ? { email: raw, name: raw.split('@')[0] } : null
@@ -35,10 +94,55 @@ export function AppProvider({ children }) {
     return null
   })
 
-  // Cart disimpan sebagai array objek: [{ id, name, group, type, edition, price, qty, stock, ... }]
+  // Daftar akun yang sudah pernah sign up
+  const [registeredUsers, setRegisteredUsers] = useState(getInitialRegisteredUsers)
+
+  const register = (userData) => {
+    const email = (typeof userData === 'string' ? userData : userData.email || '').trim().toLowerCase()
+    if (!email) return false
+    const name = (userData && userData.name) || email.split('@')[0]
+    const password = (userData && userData.password) || ''
+    const newUser = { email, name, password, registeredAt: new Date().toISOString() }
+
+    setRegisteredUsers((prev) => {
+      const filtered = prev.filter((u) => u.email.toLowerCase() !== email)
+      const updated = [...filtered, newUser]
+      try {
+        localStorage.setItem(REGISTERED_USERS_KEY, JSON.stringify(updated))
+      } catch {}
+      return updated
+    })
+    return newUser
+  }
+
+  const isEmailRegistered = (email) => {
+    if (!email) return false
+    const cleanEmail = email.trim().toLowerCase()
+    return registeredUsers.some((u) => u.email.toLowerCase() === cleanEmail)
+  }
+
+  // Dynamic Groups & Cards for Admin and Catalog
+  const [groups, setGroups] = useState(getInitialGroups)
+  const [catalogCards, setCatalogCards] = useState(getInitialCards)
+
+  // Cart
   const [cart, setCart] = useState([])
   const [toast, setToast] = useState(null)
-  const [slots, setSlots] = useState(getInitialSlots)
+  const [slots, setSlots] = useState(() => getInitialSlots(catalogCards))
+
+  // Sync groups to localStorage
+  useEffect(() => {
+    try {
+      localStorage.setItem(GROUPS_STORAGE_KEY, JSON.stringify(groups))
+    } catch {}
+  }, [groups])
+
+  // Sync cards to localStorage
+  useEffect(() => {
+    try {
+      localStorage.setItem(CARDS_STORAGE_KEY, JSON.stringify(catalogCards))
+    } catch {}
+  }, [catalogCards])
 
   const showToast = (msg) => {
     setToast(msg)
@@ -58,72 +162,98 @@ export function AppProvider({ children }) {
   }
 
   const getCardSlot = (cardId) => {
+    const found = catalogCards.find((c) => c.id === cardId)
+    if (found && found.status === 'Pre-Order') {
+      return 99 // Pre-Order selalu bisa dipesan dan tidak pernah slot habis
+    }
     if (slots[cardId] !== undefined) return slots[cardId]
-    const found = FIGMA_CATALOG_CARDS.find((c) => c.id === cardId)
     return found ? found.slots : 0
   }
 
   // Tambah photocard ke keranjang
   const add = (card, qty = 1) => {
+    const catalogRef =
+      catalogCards.find((c) => c.id === card.id || c.name?.toLowerCase() === card.name?.toLowerCase()) ||
+      FIGMA_CATALOG_CARDS.find((dc) => dc.id === card.id || dc.name?.toLowerCase() === card.name?.toLowerCase())
+
+    const trueStatus = card.status || (catalogRef ? catalogRef.status : 'Ready Stock')
+    const isPO = trueStatus === 'Pre-Order'
     const availableSlot = getCardSlot(card.id)
-    if (availableSlot <= 0) {
+
+    // Untuk Ready Stock, cek ketersediaan slot. Untuk Pre-Order, selalu bisa dipesan!
+    if (!isPO && availableSlot <= 0) {
       showToast(`Slot untuk ${card.name} sudah habis!`)
       return false
     }
+
+    const validImage = card.image || (catalogRef ? catalogRef.image : null)
 
     setCart((prev) => {
       const existingIndex = prev.findIndex((item) => item.id === card.id)
       if (existingIndex > -1) {
         const next = [...prev]
         const currentQty = next[existingIndex].qty || 1
-        const newQty = Math.min(availableSlot, currentQty + qty)
-        next[existingIndex] = { ...next[existingIndex], qty: newQty }
+        const newQty = isPO
+          ? currentQty + qty
+          : Math.min(availableSlot, currentQty + qty)
+        next[existingIndex] = {
+          ...next[existingIndex],
+          status: trueStatus,
+          image: validImage,
+          qty: newQty,
+        }
         return next
       } else {
         return [
           ...prev,
           {
             ...card,
-            type: card.type || card.edition || 'Fotokard PO',
-            qty: Math.min(availableSlot, qty),
+            status: trueStatus,
+            image: validImage,
+            type: card.type || card.edition || 'Photocard',
+            edition: card.edition || card.type || 'Photocard',
+            qty: isPO ? qty : Math.min(availableSlot, qty),
             stock: availableSlot,
           },
         ]
       }
     })
 
-    showToast(`${card.name} (${qty} kartu) berhasil ditambahkan ke keranjang!`)
+    showToast(`${card.name} (${qty} kartu [${trueStatus}]) berhasil ditambahkan ke keranjang!`)
     return true
   }
 
-  // Update kuantitas item dalam keranjang
   const updateQty = (id, newQty) => {
     if (newQty <= 0) {
       remove(id)
       return
     }
-    const maxAvailable = getCardSlot(id)
     setCart((prev) =>
-      prev.map((item) =>
-        item.id === id ? { ...item, qty: Math.min(maxAvailable, newQty) } : item
-      )
+      prev.map((item) => {
+        if (item.id === id) {
+          const isPO = item.status === 'Pre-Order'
+          const maxAvailable = getCardSlot(id)
+          const limit = isPO ? newQty : Math.min(maxAvailable, newQty)
+          return { ...item, qty: limit }
+        }
+        return item
+      })
     )
   }
 
-  // Hapus item dari keranjang
   const remove = (id) => {
     setCart((prev) => prev.filter((item) => item.id !== id))
   }
 
-  // Kosongkan keranjang
   const clear = () => setCart([])
 
-  // Kurangi kuantitas slot saat checkout selesai
   const reduceSlots = (orderedItems) => {
     setSlots((prev) => {
       const next = { ...prev }
       orderedItems.forEach((item) => {
-        const current = next[item.id] !== undefined ? next[item.id] : item.slots
+        // Pre-Order tidak memiliki batasan sisa slot
+        if (item.status === 'Pre-Order') return
+        const current = next[item.id] !== undefined ? next[item.id] : (item.slots || 10)
         const qty = item.qty || 1
         next[item.id] = Math.max(0, current - qty)
       })
@@ -132,6 +262,149 @@ export function AppProvider({ children }) {
       } catch {}
       return next
     })
+
+    // Update catalogCards juga agar sinkron di dashboard admin
+    setCatalogCards((prev) =>
+      prev.map((c) => {
+        if (c.status === 'Pre-Order') return c
+        const boughtItem = orderedItems.find((oi) => oi.id === c.id)
+        if (boughtItem) {
+          const newSlot = Math.max(0, (c.slots || 10) - (boughtItem.qty || 1))
+          return { ...c, slots: newSlot, stock: newSlot }
+        }
+        return c
+      })
+    )
+  }
+
+  // ── ADMIN ACTIONS ──
+  const addGroup = (groupData) => {
+    const trimmedName = (groupData.name || '').trim().toUpperCase()
+    if (!trimmedName) return false
+    const id = trimmedName.toLowerCase().replace(/\s+/g, '-')
+    if (groups.some((g) => g.name === trimmedName)) {
+      showToast(`Grup ${trimmedName} sudah ada!`)
+      return false
+    }
+    const newGroup = {
+      id,
+      name: trimmedName,
+      fullName: groupData.fullName || trimmedName,
+    }
+    setGroups((prev) => [...prev, newGroup])
+    showToast(`Grup ${trimmedName} berhasil ditambahkan!`)
+    return true
+  }
+
+  const deleteGroup = (groupName) => {
+    if (groups.length <= 1) {
+      showToast('Minimal harus ada 1 grup di sistem!')
+      return false
+    }
+    setGroups((prev) => prev.filter((g) => g.name !== groupName))
+    setCatalogCards((prev) => prev.filter((c) => c.group !== groupName))
+    showToast(`Grup ${groupName} dan kartunya berhasil dihapus.`)
+    return true
+  }
+
+  const addCard = (cardData) => {
+    const newId = Date.now()
+    const newCard = {
+      ...cardData,
+      id: newId,
+      status: cardData.status || 'Ready Stock',
+      slots: Number(cardData.slots) || 10,
+      stock: Number(cardData.slots) || 10,
+      price: Number(cardData.price) || 18000,
+      name: (cardData.name || 'Member').trim().toUpperCase(),
+      group: (cardData.group || 'CYE').trim().toUpperCase(),
+      edition: cardData.edition || 'Photocard Album Ver. A',
+      image: cardData.image || null,
+    }
+    setCatalogCards((prev) => [...prev, newCard])
+    setSlots((prev) => ({ ...prev, [newId]: newCard.slots }))
+    showToast(`Photocard ${newCard.name} (${newCard.status}) berhasil ditambahkan ke katalog!`)
+    return true
+  }
+
+  const increaseSlot = (cardId, amount = 1) => {
+    setSlots((prev) => {
+      const current = prev[cardId] !== undefined ? prev[cardId] : 0
+      const next = { ...prev, [cardId]: current + amount }
+      try {
+        localStorage.setItem(SLOTS_STORAGE_KEY, JSON.stringify(next))
+      } catch {}
+      return next
+    })
+    setCatalogCards((prev) =>
+      prev.map((c) =>
+        c.id === cardId
+          ? { ...c, slots: (c.slots || 0) + amount, stock: (c.slots || 0) + amount }
+          : c
+      )
+    )
+    showToast(`Slot kartu berhasil ditambah (+${amount})!`)
+  }
+
+  const setCardSlotDirect = (cardId, newTotal) => {
+    const val = Math.max(0, Number(newTotal) || 0)
+    setSlots((prev) => {
+      const next = { ...prev, [cardId]: val }
+      try {
+        localStorage.setItem(SLOTS_STORAGE_KEY, JSON.stringify(next))
+      } catch {}
+      return next
+    })
+    setCatalogCards((prev) =>
+      prev.map((c) =>
+        c.id === cardId ? { ...c, slots: val, stock: val } : c
+      )
+    )
+    showToast(`Slot kartu berhasil diubah menjadi ${val}!`)
+  }
+
+  const toggleCardStatus = (cardId) => {
+    setCatalogCards((prev) =>
+      prev.map((c) => {
+        if (c.id === cardId) {
+          const nextStatus = c.status === 'Ready Stock' ? 'Pre-Order' : 'Ready Stock'
+          showToast(`Status ${c.name} diubah menjadi ${nextStatus}!`)
+          return { ...c, status: nextStatus }
+        }
+        return c
+      })
+    )
+  }
+
+  const updateCard = (id, updatedFields) => {
+    setCatalogCards((prev) =>
+      prev.map((c) => (c.id === id ? { ...c, ...updatedFields } : c))
+    )
+    if (updatedFields.slots !== undefined) {
+      setSlots((prev) => ({ ...prev, [id]: Number(updatedFields.slots) }))
+    }
+    showToast('Data photocard berhasil diperbarui.')
+  }
+
+  const deleteCard = (id) => {
+    const found = catalogCards.find((c) => c.id === id)
+    setCatalogCards((prev) => prev.filter((c) => c.id !== id))
+    remove(id)
+    showToast(`Photocard ${found ? found.name : ''} berhasil dihapus.`)
+  }
+
+  const resetToDefault = () => {
+    setGroups(DEFAULT_GROUPS)
+    setCatalogCards(FIGMA_CATALOG_CARDS)
+    const initialSlots = {}
+    FIGMA_CATALOG_CARDS.forEach((c) => {
+      initialSlots[c.id] = c.slots
+    })
+    setSlots(initialSlots)
+    localStorage.removeItem(GROUPS_STORAGE_KEY)
+    localStorage.removeItem(CARDS_STORAGE_KEY)
+    localStorage.removeItem(SLOTS_STORAGE_KEY)
+    showToast('Data katalog berhasil direset ke 7 Member Close Your Eyes (CYE)!')
   }
 
   const count = cart.reduce((acc, item) => acc + (item.qty || 1), 0)
@@ -144,8 +417,11 @@ export function AppProvider({ children }) {
         user,
         login,
         logout,
+        register,
+        isEmailRegistered,
+        registeredUsers,
         cart,
-        items: cart, // alias kompatibilitas
+        items: cart,
         count,
         subtotal,
         total,
@@ -157,6 +433,18 @@ export function AppProvider({ children }) {
         slots,
         getCardSlot,
         reduceSlots,
+        // Admin & Group states
+        groups,
+        catalogCards,
+        addGroup,
+        deleteGroup,
+        addCard,
+        increaseSlot,
+        setCardSlotDirect,
+        toggleCardStatus,
+        updateCard,
+        deleteCard,
+        resetToDefault,
       }}
     >
       {children}

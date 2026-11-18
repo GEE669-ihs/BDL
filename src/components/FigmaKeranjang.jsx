@@ -1,5 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom'
 import { useApp } from '../context/AppContext'
+import { FIGMA_CATALOG_CARDS } from '../data/figmaCatalog'
 import FigmaCardFan from './FigmaCardFan'
 import './FigmaAuth.css'
 
@@ -15,7 +16,33 @@ export default function FigmaKeranjang() {
     }).format(val || 0)
   }
 
+  const getCardImage = (item) => {
+    if (item.image) return item.image
+    const found = FIGMA_CATALOG_CARDS.find(
+      (c) => c.id === item.id || c.name?.toLowerCase() === item.name?.toLowerCase()
+    )
+    return found ? found.image : null
+  }
+
   const isEmpty = !cart || cart.length === 0
+
+  // Identifikasi kuantitas kartu berdasarkan status (Ready Stock vs Pre-Order)
+  const readyStockItems = cart.filter((c) => (c.status || 'Ready Stock') === 'Ready Stock')
+  const preOrderItems = cart.filter((c) => c.status === 'Pre-Order')
+
+  const readyStockCount = readyStockItems.reduce((acc, it) => acc + (it.qty || 1), 0)
+  const preOrderCount = preOrderItems.reduce((acc, it) => acc + (it.qty || 1), 0)
+  const totalItemCount = readyStockCount + preOrderCount
+
+  // Label tombol checkout dinamis sesuai status kartu di keranjang
+  let checkoutButtonText = 'Checkout Sekarang →'
+  if (readyStockCount > 0 && preOrderCount > 0) {
+    checkoutButtonText = `Checkout Ready Stock (${readyStockCount}) & Pre-Order (${preOrderCount}) →`
+  } else if (preOrderCount > 0) {
+    checkoutButtonText = `Checkout Pre-Order (${preOrderCount} Kartu) →`
+  } else if (readyStockCount > 0) {
+    checkoutButtonText = `Checkout Ready Stock (${readyStockCount} Kartu) →`
+  }
 
   return (
     <div className="figma-cart-page" data-node-id="1:275" data-name="keranjang">
@@ -68,10 +95,45 @@ export default function FigmaKeranjang() {
              FILLED STATE: Interactive Cart Items & Checkout
              ────────────────────────────────────────────────────────── */
           <section className="figma-cart-filled-wrap">
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-              <h1 style={{ fontFamily: 'Unbounded, sans-serif', fontSize: 22, margin: 0, color: '#2b1e79' }}>
-                Keranjang Belanja ({count} item)
-              </h1>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 }}>
+              <div>
+                <h1 style={{ fontFamily: 'Unbounded, sans-serif', fontSize: 22, margin: 0, color: '#2b1e79' }}>
+                  Keranjang Belanja ({totalItemCount} item)
+                </h1>
+                {/* Rincian Identifikasi Status Kartu */}
+                <div style={{ display: 'flex', gap: 8, marginTop: 8, flexWrap: 'wrap' }}>
+                  {readyStockCount > 0 && (
+                    <span
+                      style={{
+                        background: '#dcfce7',
+                        color: '#166534',
+                        border: '1px solid #bbf7d0',
+                        fontSize: 12,
+                        fontWeight: 700,
+                        padding: '3px 12px',
+                        borderRadius: 999,
+                      }}
+                    >
+                      {readyStockCount} Kartu Ready Stock
+                    </span>
+                  )}
+                  {preOrderCount > 0 && (
+                    <span
+                      style={{
+                        background: '#f3e8ff',
+                        color: '#6b21a8',
+                        border: '1px solid #e9d5ff',
+                        fontSize: 12,
+                        fontWeight: 700,
+                        padding: '3px 12px',
+                        borderRadius: 999,
+                      }}
+                    >
+                      {preOrderCount} Kartu Pre-Order
+                    </span>
+                  )}
+                </div>
+              </div>
               <button
                 type="button"
                 onClick={clear}
@@ -83,6 +145,7 @@ export default function FigmaKeranjang() {
                   fontWeight: 700,
                   cursor: 'pointer',
                   textDecoration: 'underline',
+                  marginTop: 4,
                 }}
               >
                 Kosongkan
@@ -90,81 +153,92 @@ export default function FigmaKeranjang() {
             </div>
 
             <div className="figma-cart-items-list">
-              {cart.map((item) => (
-                <div key={item.id} className="figma-cart-item-row">
-                  <div className="figma-cart-item-info">
-                    <div
-                      className="figma-cart-item-badge"
-                      style={{
-                        background:
-                          item.group === 'NOVA7'
-                            ? 'linear-gradient(135deg, #6a4fd6, #7dc8ff)'
-                            : item.group === 'LUNAR GIRLS'
-                            ? 'linear-gradient(135deg, #ec4899, #8b5cf6)'
-                            : 'linear-gradient(135deg, #3b82f6, #1e1b4b)',
-                      }}
-                    >
-                      ★
-                    </div>
-                    <div>
-                      <div className="figma-cart-item-title">{item.name}</div>
-                      <div className="figma-cart-item-meta">
-                        {item.group} · {item.type}
+              {cart.map((item) => {
+                const itemImg = getCardImage(item)
+                return (
+                  <div key={item.id} className="figma-cart-item-row">
+                    <div className="figma-cart-item-info">
+                      {/* Foto photocard agar kelihatan oleh user */}
+                      <div className="figma-cart-item-thumb">
+                        {itemImg ? (
+                          <img
+                            src={itemImg}
+                            alt={item.name}
+                            className="figma-cart-item-img"
+                          />
+                        ) : (
+                          <div className="figma-cart-item-placeholder">
+                            {item.name.slice(0, 2)}
+                          </div>
+                        )}
                       </div>
-                      <div className="figma-cart-item-price">{formatRupiah(item.price)}</div>
+                      <div>
+                        <div className="figma-cart-item-title-row">
+                          <span className="figma-cart-item-title">{item.name}</span>
+                          <span className={`figma-cart-status-badge ${item.status === 'Pre-Order' ? 'is-po' : 'is-ready'}`}>
+                            {item.status || 'Ready Stock'}
+                          </span>
+                        </div>
+                        <div className="figma-cart-item-meta">
+                          {item.group} · {item.type || item.edition}
+                        </div>
+                        <div className="figma-cart-item-price">{formatRupiah(item.price)}</div>
+                      </div>
+                    </div>
+
+                    {/* Quantity control */}
+                    <div className="figma-cart-qty-ctrl">
+                      <button
+                        type="button"
+                        className="figma-cart-qty-btn"
+                        onClick={() => updateQty(item.id, (item.qty || 1) - 1)}
+                        aria-label="Kurangi kuantitas"
+                      >
+                        -
+                      </button>
+                      <span style={{ fontWeight: 800, minWidth: 24, textAlign: 'center' }}>
+                        {item.qty || 1}
+                      </span>
+                      <button
+                        type="button"
+                        className="figma-cart-qty-btn"
+                        onClick={() => updateQty(item.id, (item.qty || 1) + 1)}
+                        aria-label="Tambah kuantitas"
+                      >
+                        +
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => remove(item.id)}
+                        style={{
+                          marginLeft: 8,
+                          background: 'none',
+                          border: 'none',
+                          color: '#ef4444',
+                          cursor: 'pointer',
+                          fontSize: 13,
+                          fontWeight: 700,
+                        }}
+                        title="Hapus item"
+                        aria-label="Hapus item"
+                      >
+                        Hapus
+                      </button>
+                    </div>
+
+                    {/* Total per card */}
+                    <div className="figma-cart-item-total">
+                      {formatRupiah((item.price || 0) * (item.qty || 1))}
                     </div>
                   </div>
-
-                  {/* Quantity control */}
-                  <div className="figma-cart-qty-ctrl">
-                    <button
-                      type="button"
-                      className="figma-cart-qty-btn"
-                      onClick={() => updateQty(item.id, (item.qty || 1) - 1)}
-                      aria-label="Kurangi kuantitas"
-                    >
-                      -
-                    </button>
-                    <span style={{ fontWeight: 800, minWidth: 24, textAlign: 'center' }}>
-                      {item.qty || 1}
-                    </span>
-                    <button
-                      type="button"
-                      className="figma-cart-qty-btn"
-                      onClick={() => updateQty(item.id, (item.qty || 1) + 1)}
-                      aria-label="Tambah kuantitas"
-                    >
-                      +
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => remove(item.id)}
-                      style={{
-                        marginLeft: 8,
-                        background: 'none',
-                        border: 'none',
-                        color: '#94a3b8',
-                        cursor: 'pointer',
-                        fontSize: 16,
-                      }}
-                      title="Hapus item"
-                    >
-                      🗑
-                    </button>
-                  </div>
-
-                  {/* Total per card */}
-                  <div className="figma-cart-item-total">
-                    {formatRupiah((item.price || 0) * (item.qty || 1))}
-                  </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
 
             {/* Total and Checkout */}
             <div className="figma-cart-summary">
               <div>
-                <div className="figma-cart-total-label">Total Pembayaran PO:</div>
+                <div className="figma-cart-total-label">Total Pembayaran:</div>
                 <div className="figma-cart-total-value">{formatRupiah(subtotal)}</div>
               </div>
               <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
@@ -184,7 +258,7 @@ export default function FigmaKeranjang() {
                   className="figma-btn-checkout"
                   onClick={() => navigate('/checkout')}
                 >
-                  Checkout Sekarang →
+                  {checkoutButtonText}
                 </button>
               </div>
             </div>

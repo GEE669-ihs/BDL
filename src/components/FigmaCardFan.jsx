@@ -1,7 +1,17 @@
 import { useState } from 'react'
 import './FigmaCardFan.css'
 
-// 4-pointed sparkle SVG icon matching Figma
+// Foto member depan (Close Your Eyes / CYE)
+import minwookImg from '../assets/members/minwook.jpg'
+import jingxiangImg from '../assets/members/jingxiang.jpg'
+import yeojunImg from '../assets/members/yeojun.jpg'
+
+// Asset gambar body belakang kartu (Warna gradasi aurora murni tanpa text)
+import cardBackYuna from '../assets/figma/card-bg-yuna.png'
+import cardBackKair from '../assets/figma/card-bg-kair.png'
+import cardBackMira from '../assets/figma/card-bg-mira.png'
+
+// 4-pointed sparkle SVG icon
 function SparkleIcon() {
   return (
     <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
@@ -10,35 +20,39 @@ function SparkleIcon() {
   )
 }
 
-const FAN_CARDS_DATA = [
+// 3 Photocard Close Your Eyes (CYE): Tampak depan foto member, body belakang asset gambar user
+export const FAN_CARDS_DATA = [
   {
-    key: 'yuna',
+    key: 'jingxiang',
     posClass: 'card-left',
-    num: '07',
+    num: '02',
     hasSparkle: true,
-    name: 'YUNA',
-    group: 'LUNAR GIRLS',
-    serial: 'LG-07-LUCKY',
+    name: 'JINGXIANG',
+    group: 'CYE',
+    photo: jingxiangImg,
+    backImg: cardBackYuna,
     dataNodeId: '1:73',
   },
   {
-    key: 'kair',
+    key: 'minwook',
     posClass: 'card-center',
     num: '01',
     hasSparkle: true,
-    name: 'KAI-R',
-    group: 'NOVA7',
-    serial: 'NV-01-ALBUM',
+    name: 'MINWOOK',
+    group: 'CYE',
+    photo: minwookImg,
+    backImg: cardBackKair,
     dataNodeId: '1:85',
   },
   {
-    key: 'mira',
+    key: 'yeojun',
     posClass: 'card-right',
-    num: '09',
+    num: '03',
     hasSparkle: true,
-    name: 'MIRA',
-    group: 'STELLA-9',
-    serial: 'ST-09-FANSIGN',
+    name: 'YEOJUN',
+    group: 'CYE',
+    photo: yeojunImg,
+    backImg: cardBackMira,
     dataNodeId: '1:79',
   },
 ]
@@ -55,7 +69,7 @@ export default function FigmaCardFan({ className = '', style = {} }) {
 
   return (
     <div className={`figma-fan-wrapper ${className}`} style={style} data-name="Card fan">
-      {/* 1. Halftone Dot Matrix Texture from Figma (Node 1:49 asset) */}
+      {/* 1. Halftone Dot Matrix Texture */}
       <div className="figma-fan-dot-bg" aria-hidden="true" />
 
       {/* 2. Interactive 3D Card Stack */}
@@ -83,13 +97,22 @@ export default function FigmaCardFan({ className = '', style = {} }) {
               data-name={`Photocard ${card.name}`}
             >
               <div className="figma-flipcard-inner">
-                {/* ── FRONT FACE (Exact Figma Visual) ── */}
+                {/* ── TAMPAK DEPAN KARTU (Foto Member CYE) ── */}
                 <div className="figma-card-face figma-card-front">
-                  {/* Fluid Aurora Caustics Shader Layer from Figma */}
-                  <div className="figma-card-aurora" aria-hidden="true" />
+                  {/* Foto asli member */}
+                  <img
+                    src={card.photo}
+                    alt={card.name}
+                    className="figma-fan-card-img"
+                    loading="eager"
+                  />
+                  {/* Gradient shadow di bagian bawah untuk kontras nama */}
+                  <div className="figma-fan-card-gradient" />
+
+                  {/* Hologram Shimmer Layer */}
                   <div className="figma-card-hologram" aria-hidden="true" />
-                  
-                  {/* Top: Number & 4-pointed Star */}
+
+                  {/* Top: Nomor & Bintang Sparkle */}
                   <div className="figma-card-header">
                     <span className="figma-card-num">{card.num}</span>
                     {card.hasSparkle && (
@@ -99,27 +122,34 @@ export default function FigmaCardFan({ className = '', style = {} }) {
                     )}
                   </div>
 
-                  {/* Bottom: Name & Group */}
+                  {/* Bottom: Nama Member & Grup CYE */}
                   <div className="figma-card-footer">
                     <div className="figma-card-name">{card.name}</div>
                     <div className="figma-card-group">{card.group}</div>
                   </div>
                 </div>
 
-                {/* ── BACK FACE (Official Seal & Hologram) ── */}
+                {/* ── BODY BELAKANG KARTU (Asset Gradasi Warna Aurora Murni Tanpa Teks) ── */}
                 <div className="figma-card-face figma-card-back">
-                  <div className="figma-card-back-seal">★</div>
-                  <div>
-                    <div className="figma-card-back-title">G★Closerz</div>
-                    <div className="figma-card-back-sub">Official Photocard</div>
-                  </div>
-                  <div className="figma-card-back-code">{card.serial}</div>
-                  <div className="figma-card-back-hint">Klik untuk membalik</div>
+                  {/* Gambar Art Gradasi Murni Tanpa Teks */}
+                  <img
+                    src={card.backImg}
+                    alt=""
+                    className="figma-card-back-asset-img"
+                    loading="eager"
+                  />
+                  {/* Shimmer hologram overlay */}
+                  <div className="figma-card-back-hologram" aria-hidden="true" />
                 </div>
               </div>
             </div>
           )
         })}
+      </div>
+
+      {/* Subtext: Flip the Photocard */}
+      <div className="figma-fan-hint-text">
+        <span>Flip the Photocard</span>
       </div>
     </div>
   )

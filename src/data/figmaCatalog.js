@@ -1,140 +1,114 @@
-// 12 Photocard Catalog Data matching Figma Node 1:104
+// ─────────────────────────────────────────────────────────────────────────────
+// Close Your Eyes (CYE) - Catalog Data & Dynamic Groups
+// 7 Members with predefined Ready Stock and Pre-Order status
+// Both statuses can be ordered, Ready Stock shows remaining slots, Pre-Order does not.
+// ─────────────────────────────────────────────────────────────────────────────
+
+import minwookImg from '../assets/members/minwook.jpg'
+import jingxiangImg from '../assets/members/jingxiang.jpg'
+import yeojunImg from '../assets/members/yeojun.jpg'
+import sungminImg from '../assets/members/sungmin.jpg'
+import seunghoImg from '../assets/members/seungho.jpg'
+import kenshinImg from '../assets/members/kenshin.jpg'
+import kyoungbaeImg from '../assets/members/kyoungbae.jpg'
+
+// Grup default
+export const DEFAULT_GROUPS = [
+  { id: 'cye', name: 'CYE', fullName: 'Close Your Eyes' },
+]
+
+// 7 Photocard Close Your Eyes (CYE)
+// Pilihan kartu Ready Stock (tampil sisa slot) & Pre-Order (tanpa tulisan sisa slot, bisa dipesan)
 export const FIGMA_CATALOG_CARDS = [
-  // Row 1 - NOVA7
+  // 1. MINWOOK - Ready Stock (Tampil sisa slot, bisa dipesan)
   {
-    id: 101,
-    name: 'Kai-R',
-    group: 'NOVA7',
-    edition: 'Fotokard Album Ver. A',
+    id: 201,
+    name: 'MINWOOK',
+    group: 'CYE',
+    edition: 'Photocard Album Ver. A (ETERNAL...)',
+    status: 'Ready Stock',
     slots: 12,
     stock: 12,
     price: 18000,
+    image: minwookImg,
     gradient: 'linear-gradient(180deg, #7dc8ff 0%, #d7b8ff 100%)',
-    bg: '#6a4fd6',
   },
+  // 2. JINGXIANG - Pre-Order (Tanpa tulisan sisa slot, BISA DIPESAN)
   {
-    id: 102,
-    name: 'Jiho',
-    group: 'NOVA7',
-    edition: 'Fotokard Album Ver. A',
-    slots: 8,
-    stock: 8,
-    price: 18000,
+    id: 202,
+    name: 'JINGXIANG',
+    group: 'CYE',
+    edition: 'Photocard Album Ver. A (ETERNALT)',
+    status: 'Pre-Order',
+    slots: 15,
+    stock: 15,
+    price: 20000,
+    image: jingxiangImg,
     gradient: 'linear-gradient(180deg, #7dc8ff 0%, #d7b8ff 100%)',
-    bg: '#4d3cad',
   },
+  // 3. YEOJUN - Ready Stock (Tampil sisa slot, bisa dipesan)
   {
-    id: 103,
-    name: 'Sen',
-    group: 'NOVA7',
-    edition: 'Lucky Draw Edisi Silver',
-    slots: 3,
-    stock: 3,
-    price: 45000,
-    gradient: 'linear-gradient(180deg, #b8cde6 0%, #8ca9d3 100%)',
-    bg: '#334155',
-  },
-  {
-    id: 104,
-    name: 'Rei',
-    group: 'NOVA7',
-    edition: 'Fotokard Album Ver. B',
-    slots: 0,
-    stock: 0,
-    price: 18000,
-    gradient: 'linear-gradient(180deg, #d1d5db 0%, #9ca3af 100%)',
-    bg: '#4b5563',
-  },
-
-  // Row 2 - LUNAR GIRLS
-  {
-    id: 105,
-    name: 'Yuna',
-    group: 'LUNAR GIRLS',
-    edition: 'Fotokard Album Ver. A',
+    id: 203,
+    name: 'YEOJUN',
+    group: 'CYE',
+    edition: 'Photocard Album Ver. A (ETERNA...)',
+    status: 'Ready Stock',
     slots: 10,
     stock: 10,
-    price: 20000,
-    gradient: 'linear-gradient(180deg, #ff7ccb 0%, #c7dde9 100%)',
-    bg: '#701a75',
+    price: 18000,
+    image: yeojunImg,
+    gradient: 'linear-gradient(180deg, #b8cde6 0%, #8ca9d3 100%)',
   },
+  // 4. SUNGMIN - Pre-Order (Tanpa tulisan sisa slot, BISA DIPESAN)
   {
-    id: 106,
-    name: 'Hana',
-    group: 'LUNAR GIRLS',
-    edition: 'POB Makestar Hologram',
-    slots: 4,
-    stock: 4,
-    price: 35000,
-    gradient: 'linear-gradient(180deg, #f472b6 0%, #818cf8 100%)',
-    bg: '#831843',
+    id: 204,
+    name: 'SUNGMIN',
+    group: 'CYE',
+    edition: 'Photocard Album Ver. B (DUSK)',
+    status: 'Pre-Order',
+    slots: 15,
+    stock: 15,
+    price: 18000,
+    image: sungminImg,
+    gradient: 'linear-gradient(180deg, #d1d5db 0%, #9ca3af 100%)',
   },
+  // 5. SEUNGHO - Ready Stock (Tampil sisa slot, bisa dipesan)
   {
-    id: 107,
-    name: 'Soo',
-    group: 'LUNAR GIRLS',
-    edition: 'Fotokard Album Ver. B',
+    id: 205,
+    name: 'SEUNGHO',
+    group: 'CYE',
+    edition: 'Photocard Album Ver. B (DUSK)',
+    status: 'Ready Stock',
     slots: 6,
     stock: 6,
-    price: 20000,
-    gradient: 'linear-gradient(180deg, #fbcfe8 0%, #a78bfa 100%)',
-    bg: '#581c87',
+    price: 18000,
+    image: seunghoImg,
+    gradient: 'linear-gradient(180deg, #3a3a52 0%, #14111c 100%)',
   },
+  // 6. KENSHIN - Pre-Order (Tanpa tulisan sisa slot, BISA DIPESAN)
   {
-    id: 108,
-    name: 'Eun',
-    group: 'LUNAR GIRLS',
-    edition: 'Lucky Draw Pink Heart',
-    slots: 2,
-    stock: 2,
-    price: 40000,
-    gradient: 'linear-gradient(180deg, #fb7185 0%, #e879f9 100%)',
-    bg: '#9d174d',
+    id: 206,
+    name: 'KENSHIN',
+    group: 'CYE',
+    edition: 'Lucky Draw Hologram Silver',
+    status: 'Pre-Order',
+    slots: 15,
+    stock: 15,
+    price: 45000,
+    image: kenshinImg,
+    gradient: 'linear-gradient(180deg, #7d58d0 0%, #93acd7 100%)',
   },
-
-  // Row 3 - STELLA-9
+  // 7. KYOUNGBAE - Ready Stock (Tampil sisa slot, bisa dipesan)
   {
-    id: 109,
-    name: 'Mira',
-    group: 'STELLA-9',
-    edition: 'Fotokard Album Ver. A',
-    slots: 9,
-    stock: 9,
-    price: 22000,
-    gradient: 'linear-gradient(180deg, #889fce 0%, #1a1040 100%)',
-    bg: '#1e1b4b',
-  },
-  {
-    id: 110,
-    name: 'Dami',
-    group: 'STELLA-9',
-    edition: 'Fansign Event Benefit',
-    slots: 1,
-    stock: 1,
-    price: 50000,
-    gradient: 'linear-gradient(180deg, #38bdf8 0%, #6366f1 100%)',
-    bg: '#0c4a6e',
-  },
-  {
-    id: 111,
-    name: 'Rin',
-    group: 'STELLA-9',
-    edition: 'Fotokard Album Ver. B',
-    slots: 7,
-    stock: 7,
-    price: 22000,
-    gradient: 'linear-gradient(180deg, #818cf8 0%, #312e81 100%)',
-    bg: '#312e81',
-  },
-  {
-    id: 112,
-    name: 'Chae',
-    group: 'STELLA-9',
-    edition: 'POB Soundwave Hologram',
+    id: 207,
+    name: 'KYOUNGBAE',
+    group: 'CYE',
+    edition: 'POB Weverse Special Pink',
+    status: 'Ready Stock',
     slots: 5,
     stock: 5,
     price: 38000,
-    gradient: 'linear-gradient(180deg, #c084fc 0%, #38bdf8 100%)',
-    bg: '#3b0764',
+    image: kyoungbaeImg,
+    gradient: 'linear-gradient(180deg, #7d58d0 0%, #93acd7 100%)',
   },
 ]

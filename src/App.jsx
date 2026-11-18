@@ -8,6 +8,7 @@ const Login = lazy(() => import('./components/FigmaLogin'))
 const SignUp = lazy(() => import('./components/FigmaSignUp'))
 const Keranjang = lazy(() => import('./components/FigmaKeranjang'))
 const Checkout = lazy(() => import('./components/FigmaCheckout'))
+const Admin = lazy(() => import('./components/FigmaAdmin'))
 
 // Scroll ke atas saat navigasi halaman
 function ScrollToTop() {
@@ -47,6 +48,9 @@ function AppRoutes() {
 
         {/* Halaman Checkout */}
         <Route path="/checkout" element={<Checkout />} />
+
+        {/* Dashboard Admin */}
+        <Route path="/admin" element={<Admin />} />
 
         {/* Redirect semua rute lama / tidak dikenal ke beranda landing page */}
         <Route path="/beranda" element={<Navigate to="/" replace />} />

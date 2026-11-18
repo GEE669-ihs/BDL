@@ -111,10 +111,12 @@
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  padding: 24px clamp(16px, 4vw, 48px) 0;
+  padding: 24px clamp(120px, 14vw, 220px) 0 0;
   max-width: 1440px;
   margin: 0 auto;
   box-sizing: border-box;
+  position: relative;
+  z-index: 25;
 }
 
 .figma-auth-tabs {
@@ -173,8 +175,10 @@
 
 /* ── Floating Decorative Photocards in Background (Node 1:176 / 1:240) ──────── */
 .figma-auth-cards-decor {
-  position: absolute;
+  position: fixed;
   inset: 0;
+  width: 100vw;
+  height: 100vh;
   pointer-events: none;
   overflow: hidden;
   z-index: 1;
@@ -183,100 +187,274 @@
 .figma-decor-card {
   position: absolute;
   border-radius: 18px;
-  border: 1px solid rgba(217, 220, 230, 0.6);
-  box-shadow: 0 16px 36px rgba(44, 35, 80, 0.4);
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  padding: 18px;
-  box-sizing: border-box;
-  backdrop-filter: blur(4px);
-  opacity: 0.92;
+  perspective: 1200px;
+  cursor: pointer;
+  pointer-events: auto; /* Bisa diklik untuk flip kartu */
+  user-select: none;
   transition: transform 0.4s ease;
 }
 
-/* Card 1: KAI-R (left) */
-.figma-decor-card.card-kair {
-  left: 2%;
-  top: 40%;
-  width: 220px;
-  height: 340px;
-  background: linear-gradient(180deg, #6a4fd6 0%, #7dc8ff 100%);
-  transform: rotate(-15.3deg);
+.figma-decor-card-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 18px;
+  transform-style: preserve-3d;
+  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 16px 36px rgba(44, 35, 80, 0.45);
 }
 
-/* Card 2: YUNA (right top) */
-.figma-decor-card.card-yuna {
-  right: 2%;
-  top: 5%;
-  width: 200px;
-  height: 310px;
-  background: linear-gradient(180deg, #3f2e81 0%, #14111c 73%);
-  transform: rotate(26.88deg);
+.figma-decor-card.is-flipped .figma-decor-card-inner {
+  transform: rotateY(180deg);
 }
 
-/* Card 3: MIRA (right bottom) */
-.figma-decor-card.card-mira {
-  right: 8%;
-  bottom: 8%;
-  width: 200px;
-  height: 310px;
-  background: linear-gradient(180deg, #889fce 7%, #62759c 51%, #55648d 59%, #1a1040 96%);
-  transform: rotate(10deg);
+.figma-decor-card-face {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 18px;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  overflow: hidden;
+  box-sizing: border-box;
 }
 
-/* Card internal decorations */
-.figma-decor-card-top {
+.figma-decor-card-front {
+  position: absolute;
+  inset: 0;
+  border-radius: 18px;
+  border: 1.5px solid rgba(255, 255, 255, 0.75);
+  transform: rotateY(0deg) translateZ(1px);
+  box-shadow: 0 16px 36px rgba(44, 35, 80, 0.45);
+  overflow: hidden;
+  background: #14111c;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-sizing: border-box;
+}
+
+.figma-decor-card-back {
+  position: absolute;
+  inset: 0;
+  border-radius: 18px;
+  border: 1.5px solid rgba(255, 255, 255, 0.85);
+  transform: rotateY(180deg) translateZ(1px);
+  box-shadow: 0 16px 36px rgba(44, 35, 80, 0.45), 0 0 24px rgba(125, 200, 255, 0.35);
+  overflow: hidden;
+  background: #14111c;
+}
+
+/* Smooth 3D Flip face visibility handled by backface-visibility */
+.figma-decor-card-inner {
+  transform-style: preserve-3d;
+  -webkit-transform-style: preserve-3d;
+}
+
+/* Full-bleed photocard image on front & user asset on back */
+.figma-decor-card-img,
+.figma-decor-card-back-asset {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 18px;
+  z-index: 1;
+}
+
+.figma-decor-card-overlay {
+  position: absolute;
+  inset: 0;
+  border-radius: 18px;
+  background: linear-gradient(
+    180deg,
+    rgba(20, 16, 45, 0.05) 0%,
+    rgba(20, 16, 45, 0.2) 45%,
+    rgba(10, 8, 26, 0.8) 78%,
+    rgba(8, 6, 20, 0.95) 100%
+  );
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Card Header: 01, 02, 03 & Sparkle */
+.figma-decor-card-header {
+  position: relative;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  color: #d9dce6;
+  z-index: 5;
+  width: 100%;
+}
+
+.figma-decor-card-num {
   font-family: 'Unbounded', sans-serif;
+  font-weight: 800;
   font-size: 13px;
-  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: 0.05em;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
 }
 
 .figma-decor-card-star {
-  font-size: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.85));
 }
 
-.figma-decor-card-bottom {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
+.figma-decor-card-star svg {
+  width: 18px;
+  height: 18px;
+  fill: #ffffff;
 }
 
-.figma-decor-card-name {
+/* Card Footer: Nama Member & Grup CYE persis sama dengan kartu halaman beranda */
+.figma-decor-card-front .figma-card-footer {
+  position: relative;
+  z-index: 5;
+  margin-top: auto;
+  text-align: left;
+  width: 100%;
+  padding: 0;
+}
+
+.figma-decor-card-front .figma-card-name {
   font-family: 'Unbounded', sans-serif;
   font-weight: 900;
-  font-size: 22px;
+  font-size: 21px;
+  line-height: 1.1;
   color: #ffffff;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.9);
   letter-spacing: -0.02em;
 }
 
-.figma-decor-card-group {
-  font-family: 'Figtree', sans-serif;
-  font-weight: 600;
-  font-size: 12px;
-  color: #d9dce6;
+.figma-decor-card-front .figma-card-group {
+  font-family: 'Unbounded', sans-serif;
+  font-weight: 700;
+  font-size: 11px;
+  color: #7dc8ff;
+  margin-top: 4px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
 }
 
 /* Hologram foil shimmer on decorative cards */
 .figma-decor-card-foil {
   position: absolute;
   inset: 0;
+  border-radius: 18px;
   background: linear-gradient(
     135deg,
-    rgba(255, 255, 255, 0.4) 0%,
-    rgba(255, 198, 227, 0.2) 25%,
-    rgba(125, 200, 255, 0.2) 50%,
-    rgba(218, 98, 177, 0.25) 75%,
-    rgba(255, 255, 255, 0.4) 100%
+    rgba(255, 255, 255, 0.35) 0%,
+    rgba(255, 198, 227, 0.15) 25%,
+    rgba(125, 200, 255, 0.15) 50%,
+    rgba(218, 98, 177, 0.2) 75%,
+    rgba(255, 255, 255, 0.35) 100%
   );
   mix-blend-mode: overlay;
   opacity: 0.65;
   pointer-events: none;
+  z-index: 3;
+}
+
+/* Exact Card Positions from Figma UI Design (Image 3) */
+/* Card 1: KAI-R / Left Card (Posisi Kiri Bawah, terpotong di tepi kiri & bawah) */
+.figma-decor-card.card-kair {
+  left: -25px;
+  bottom: 35px;
+  top: auto;
+  width: 215px;
+  height: 335px;
+  transform: rotate(-13.5deg);
+  transform-origin: center center;
+}
+
+.figma-decor-card.card-kair:hover {
+  transform: rotate(-13.5deg) scale(1.04);
+}
+
+/* Card 2: YUNA / Right-Top Card (Posisi Kanan Atas, terpotong di tepi kanan) */
+.figma-decor-card.card-yuna {
+  right: -35px;
+  top: 16%;
+  bottom: auto;
+  width: 210px;
+  height: 330px;
+  transform: rotate(26.5deg);
+  transform-origin: center center;
+}
+
+.figma-decor-card.card-yuna:hover {
+  transform: rotate(26.5deg) scale(1.04);
+}
+
+/* Card 3: MIRA / Right-Bottom Card (Posisi Kanan Bawah, terpotong di tepi bawah) */
+.figma-decor-card.card-mira {
+  right: 65px;
+  bottom: -75px;
+  top: auto;
+  width: 210px;
+  height: 330px;
+  transform: rotate(10deg);
+  transform-origin: center center;
+}
+
+.figma-decor-card.card-mira:hover {
+  transform: rotate(10deg) scale(1.04);
+}
+
+@media (max-width: 1300px) {
+  .figma-decor-card.card-kair {
+    left: -40px;
+    bottom: 25px;
+    transform: rotate(-13.5deg) scale(0.9);
+  }
+  .figma-decor-card.card-yuna {
+    right: -45px;
+    top: 14%;
+    transform: rotate(26.5deg) scale(0.9);
+  }
+  .figma-decor-card.card-mira {
+    right: 40px;
+    bottom: -85px;
+    transform: rotate(10deg) scale(0.9);
+  }
+}
+
+@media (max-width: 1024px) {
+  .figma-decor-card.card-kair {
+    left: -65px;
+    bottom: 15px;
+    transform: rotate(-13.5deg) scale(0.78);
+  }
+  .figma-decor-card.card-yuna {
+    right: -60px;
+    top: 12%;
+    transform: rotate(26.5deg) scale(0.78);
+  }
+  .figma-decor-card.card-mira {
+    right: 20px;
+    bottom: -95px;
+    transform: rotate(10deg) scale(0.78);
+  }
+}
+
+@media (max-width: 860px) {
+  .figma-auth-cards-decor {
+    display: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .figma-auth-cards-decor {
+    display: none;
+  }
 }
 
 /* ── Modal Form Box (Node 1:206 / 1:228) ────────────────────────────────────── */
@@ -307,6 +485,7 @@
     opacity: 0;
     transform: translateY(16px) scale(0.98);
   }
+
   to {
     opacity: 1;
     transform: translateY(0) scale(1);
@@ -660,18 +839,38 @@
   gap: 16px;
 }
 
-.figma-cart-item-badge {
-  width: 48px;
-  height: 64px;
-  border-radius: 8px;
+.figma-cart-item-thumb {
+  width: 58px;
+  height: 80px;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #1e1544;
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #fff;
+  box-shadow: 0 4px 12px rgba(43, 30, 121, 0.2);
+  border: 1px solid rgba(125, 200, 255, 0.4);
+}
+
+.figma-cart-item-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.figma-cart-item-placeholder {
   font-family: 'Unbounded', sans-serif;
   font-weight: 800;
   font-size: 16px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  color: #7dc8ff;
+}
+
+.figma-cart-item-title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
 }
 
 .figma-cart-item-title {
@@ -679,6 +878,27 @@
   font-weight: 800;
   font-size: 16px;
   color: #2b1e79;
+}
+
+.figma-cart-status-badge {
+  font-family: 'Figtree', sans-serif;
+  font-weight: 700;
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  letter-spacing: 0.02em;
+}
+
+.figma-cart-status-badge.is-ready {
+  background: rgba(34, 197, 94, 0.15);
+  color: #15803d;
+  border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+.figma-cart-status-badge.is-po {
+  background: rgba(236, 72, 153, 0.15);
+  color: #be185d;
+  border: 1px solid rgba(236, 72, 153, 0.3);
 }
 
 .figma-cart-item-meta {
@@ -781,7 +1001,8 @@
 /* ── Responsive Adaptations ────────────────────────────────────────────────── */
 @media (max-width: 1024px) {
   .figma-auth-cards-decor {
-    display: none; /* Hide heavy absolute background cards on tablets/phones to focus on the modal */
+    display: none;
+    /* Hide heavy absolute background cards on tablets/phones to focus on the modal */
   }
 }
 
@@ -831,6 +1052,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+
   .figma-auth-modal,
   .figma-btn-submit,
   .figma-btn-back,

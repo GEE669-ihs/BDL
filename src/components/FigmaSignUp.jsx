@@ -3,9 +3,28 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useApp } from '../context/AppContext'
 import './FigmaAuth.css'
 
+// Foto member tampak depan (Close Your Eyes / CYE - internet asset)
+import minwookImg from '../assets/members/minwook.jpg'
+import jingxiangImg from '../assets/members/jingxiang.jpg'
+import yeojunImg from '../assets/members/yeojun.jpg'
+
+// Asset gambar body belakang kartu (Warna gradasi aurora murni tanpa teks)
+import cardBackYuna from '../assets/figma/card-bg-yuna.png'
+import cardBackKair from '../assets/figma/card-bg-kair.png'
+import cardBackMira from '../assets/figma/card-bg-mira.png'
+
+// 4-pointed sparkle icon
+function SparkleIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" style={{ width: 18, height: 18 }}>
+      <path d="M12 0L14.59 9.41L24 12L14.59 14.59L12 24L9.41 14.59L0 12L9.41 9.41L12 0Z" />
+    </svg>
+  )
+}
+
 export default function FigmaSignUp() {
   const navigate = useNavigate()
-  const { login } = useApp()
+  const { register } = useApp()
 
   const [step, setStep] = useState(1)
   const [email, setEmail] = useState('')
@@ -13,9 +32,16 @@ export default function FigmaSignUp() {
   const [message, setMessage] = useState(null)
   const [isLoading, setIsLoading] = useState(false)
 
+  // State Flipcard untuk 3 kartu dekoratif di background
+  const [flippedCards, setFlippedCards] = useState({})
+  const toggleCardFlip = (key) => {
+    setFlippedCards((prev) => ({ ...prev, [key]: !prev[key] }))
+  }
+
   const handleNext = (e) => {
     e.preventDefault()
-    if (!email.trim()) {
+    const cleanEmail = email.trim().toLowerCase()
+    if (!cleanEmail) {
       setMessage({ type: 'error', text: 'Silakan masukkan email Anda.' })
       return
     }
@@ -26,14 +52,19 @@ export default function FigmaSignUp() {
       return
     }
 
-    // Step 2: Set password & complete sign up
+    // Step 2: Set password & register user (wajib diarahkan ke login, tidak auto-login ke beranda)
     setIsLoading(true)
     setTimeout(() => {
-      login(email)
-      setMessage({ type: 'success', text: 'Pendaftaran berhasil! Mengalihkan ke halaman...' })
-      setTimeout(() => {
-        navigate('/landing')
-      }, 700)
+      register({ email: cleanEmail, password })
+      setIsLoading(false)
+      // Redirect ke login dengan notifikasi bahwa akun berhasil dibuat
+      navigate('/login-figma', {
+        state: {
+          registeredEmail: cleanEmail,
+          fromSignUp: true,
+          notice: 'Akun Anda berhasil didaftarkan! Silakan login terlebih dahulu untuk mengakses beranda.',
+        },
+      })
     }, 400)
   }
 
@@ -48,15 +79,21 @@ export default function FigmaSignUp() {
           <button
             type="button"
             className="figma-btn-back"
-            onClick={() => navigate('/landing')}
+            onClick={() => {
+              if (step === 2) {
+                setStep(1)
+              } else {
+                navigate('/login-figma')
+              }
+            }}
             data-node-id="1:272"
-            aria-label="Kembali ke landing page"
+            aria-label="Kembali ke halaman login"
           >
             Back
           </button>
 
           {/* Logo (Node 1:223) */}
-          <Link to="/landing" className="figma-auth-logo" data-node-id="1:223">
+          <Link to="/login-figma" className="figma-auth-logo" data-node-id="1:223">
             <span className="logo-g" data-node-id="1:224">G</span>
             <span className="logo-star" data-node-id="1:225">★</span>
             <span className="logo-closerz" data-node-id="1:226">Closerz</span>
@@ -92,44 +129,101 @@ export default function FigmaSignUp() {
           3. MAIN BODY & CENTER MODAL (Node 1:227 & 1:228)
           ───────────────────────────────────────────────────────────── */}
       <main className="figma-auth-body">
-        {/* Floating Background Decorative Cards (Node 1:240) */}
+        {/* 3 Floating Flipcards di background sesuai posisi Figma Asli */}
         <div className="figma-auth-cards-decor" data-node-id="1:240" aria-hidden="true">
-          {/* Card 1: KAI-R (Node 1:241) */}
-          <div className="figma-decor-card card-kair" data-node-id="1:241">
-            <div className="figma-decor-card-foil" />
-            <div className="figma-decor-card-top">
-              <span>01</span>
-              <span className="figma-decor-card-star">✦</span>
-            </div>
-            <div className="figma-decor-card-bottom">
-              <span className="figma-decor-card-name">KAI-R</span>
-              <span className="figma-decor-card-group">NOVA7</span>
+          {/* Card 1: Kiri (MINWOOK / CYE-01) */}
+          <div
+            className={`figma-decor-card card-kair ${flippedCards.kair ? 'is-flipped' : ''}`}
+            onClick={() => toggleCardFlip('kair')}
+            title="Klik untuk flip photocard"
+            role="button"
+            tabIndex={0}
+          >
+            <div className="figma-decor-card-inner">
+              {/* Tampak Depan: Foto Member CYE Full-Bleed */}
+              <div className="figma-decor-card-face figma-decor-card-front">
+                <img src={minwookImg} alt="MINWOOK" className="figma-decor-card-img" />
+                <div className="figma-decor-card-overlay" />
+                <div className="figma-decor-card-foil" />
+                <div className="figma-decor-card-header">
+                  <span className="figma-decor-card-num">01</span>
+                  <span className="figma-decor-card-star"><SparkleIcon /></span>
+                </div>
+                <div className="figma-card-footer">
+                  <div className="figma-card-name">MINWOOK</div>
+                  <div className="figma-card-group">CYE</div>
+                </div>
+              </div>
+
+              {/* Body Belakang: Asset Gradasi Warna Aurora Murni Tanpa Teks */}
+              <div className="figma-decor-card-face figma-decor-card-back">
+                <img src={cardBackKair} alt="" className="figma-decor-card-back-asset" />
+                <div className="figma-decor-card-foil" />
+              </div>
             </div>
           </div>
 
-          {/* Card 2: YUNA (Node 1:248) */}
-          <div className="figma-decor-card card-yuna" data-node-id="1:248">
-            <div className="figma-decor-card-foil" />
-            <div className="figma-decor-card-top">
-              <span>07</span>
-              <span className="figma-decor-card-star">✦</span>
-            </div>
-            <div className="figma-decor-card-bottom">
-              <span className="figma-decor-card-name">YUNA</span>
-              <span className="figma-decor-card-group">LUNAR GIRLS</span>
+          {/* Card 2: Kanan Atas (JINGXIANG / CYE-02) */}
+          <div
+            className={`figma-decor-card card-yuna ${flippedCards.yuna ? 'is-flipped' : ''}`}
+            onClick={() => toggleCardFlip('yuna')}
+            title="Klik untuk flip photocard"
+            role="button"
+            tabIndex={0}
+          >
+            <div className="figma-decor-card-inner">
+              {/* Tampak Depan: Foto Member CYE Full-Bleed */}
+              <div className="figma-decor-card-face figma-decor-card-front">
+                <img src={jingxiangImg} alt="JINGXIANG" className="figma-decor-card-img" />
+                <div className="figma-decor-card-overlay" />
+                <div className="figma-decor-card-foil" />
+                <div className="figma-decor-card-header">
+                  <span className="figma-decor-card-num">02</span>
+                  <span className="figma-decor-card-star"><SparkleIcon /></span>
+                </div>
+                <div className="figma-card-footer">
+                  <div className="figma-card-name">JINGXIANG</div>
+                  <div className="figma-card-group">CYE</div>
+                </div>
+              </div>
+
+              {/* Body Belakang: Asset Gradasi Warna Aurora Murni Tanpa Teks */}
+              <div className="figma-decor-card-face figma-decor-card-back">
+                <img src={cardBackYuna} alt="" className="figma-decor-card-back-asset" />
+                <div className="figma-decor-card-foil" />
+              </div>
             </div>
           </div>
 
-          {/* Card 3: MIRA (Node 1:254) */}
-          <div className="figma-decor-card card-mira" data-node-id="1:254">
-            <div className="figma-decor-card-foil" />
-            <div className="figma-decor-card-top">
-              <span>09</span>
-              <span className="figma-decor-card-star">✦</span>
-            </div>
-            <div className="figma-decor-card-bottom">
-              <span className="figma-decor-card-name">MIRA</span>
-              <span className="figma-decor-card-group">STELLA-9</span>
+          {/* Card 3: Kanan Bawah (YEOJUN / CYE-03) */}
+          <div
+            className={`figma-decor-card card-mira ${flippedCards.mira ? 'is-flipped' : ''}`}
+            onClick={() => toggleCardFlip('mira')}
+            title="Klik untuk flip photocard"
+            role="button"
+            tabIndex={0}
+          >
+            <div className="figma-decor-card-inner">
+              {/* Tampak Depan: Foto Member CYE Full-Bleed */}
+              <div className="figma-decor-card-face figma-decor-card-front">
+                <img src={yeojunImg} alt="YEOJUN" className="figma-decor-card-img" />
+                <div className="figma-decor-card-overlay" />
+                <div className="figma-decor-card-foil" />
+                <div className="figma-decor-card-header">
+                  <span className="figma-decor-card-num">03</span>
+                  <span className="figma-decor-card-star"><SparkleIcon /></span>
+                </div>
+                <div className="figma-card-footer">
+                  <div className="figma-card-name">YEOJUN</div>
+                  <div className="figma-card-group">CYE</div>
+                </div>
+              </div>
+
+              {/* Body Belakang: Asset Gradasi Warna Aurora Murni Tanpa Teks */}
+              <div className="figma-decor-card-face figma-decor-card-back">
+                <img src={cardBackMira} alt="" className="figma-decor-card-back-asset" />
+                <div className="figma-decor-card-foil" />
+              </div>
             </div>
           </div>
         </div>
