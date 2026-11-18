@@ -114,7 +114,7 @@ function AppRoutes() {
 
 export default function App() {
   return (
-    <BrowserRouter basename="/go-closerz">
+    <BrowserRouter basename={import.meta.env.BASE_URL}>
       <AppProvider>
         <ScrollToTop />
         <CelestialAurora />
