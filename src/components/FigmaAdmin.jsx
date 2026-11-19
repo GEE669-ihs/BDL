@@ -251,7 +251,8 @@ export default function FigmaAdmin() {
                 className="figma-admin-btn-back"
                 onClick={handleReturnToWebsite}
               >
-                ← Kembali ke Website
+                <span className="btn-text-full">← Kembali ke Website</span>
+                <span className="btn-text-short">← Ke Website</span>
               </button>
             </div>
           </div>
@@ -343,7 +344,8 @@ export default function FigmaAdmin() {
               onClick={handleReturnToWebsite}
               title="Kembali melihat tampilan katalog website"
             >
-              ← Kembali ke Website
+              <span className="btn-text-full">← Kembali ke Website</span>
+              <span className="btn-text-short">← Ke Website</span>
             </button>
             <button
               type="button"
