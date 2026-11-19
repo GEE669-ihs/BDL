@@ -25,7 +25,7 @@ function SparkleIcon() {
 export default function FigmaLogin() {
   const navigate = useNavigate()
   const location = useLocation()
-  const { login, isEmailRegistered } = useApp()
+  const { login, isEmailRegistered, ADMIN_CREDENTIALS } = useApp()
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -56,7 +56,29 @@ export default function FigmaLogin() {
       return
     }
 
-    // Validasi ketat: User tidak diperbolehkan login jika belum pernah Sign Up
+    // 1. Cek Login Khusus Admin
+    if (ADMIN_CREDENTIALS && cleanEmail === ADMIN_CREDENTIALS.email.toLowerCase()) {
+      if (password !== ADMIN_CREDENTIALS.password) {
+        setMessage({ type: 'error', text: 'Password akun admin salah! Silakan periksa kembali.' })
+        return
+      }
+      setIsLoading(true)
+      setTimeout(() => {
+        sessionStorage.setItem('closerz_admin_logged_in', 'true')
+        login({
+          email: ADMIN_CREDENTIALS.email,
+          name: ADMIN_CREDENTIALS.name,
+          role: 'admin',
+        })
+        setMessage({ type: 'success', text: 'Login berhasil sebagai Admin! Mengalihkan ke panel admin...' })
+        setTimeout(() => {
+          navigate('/admin')
+        }, 600)
+      }, 350)
+      return
+    }
+
+    // 2. Validasi Login Pengguna Reguler
     if (!isEmailRegistered(cleanEmail)) {
       setMessage({
         type: 'error',
@@ -67,6 +89,7 @@ export default function FigmaLogin() {
 
     setIsLoading(true)
     setTimeout(() => {
+      sessionStorage.removeItem('closerz_admin_logged_in')
       login(cleanEmail)
       setMessage({ type: 'success', text: 'Berhasil login! Mengalihkan ke beranda...' })
       setTimeout(() => {

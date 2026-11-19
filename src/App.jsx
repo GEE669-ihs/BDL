@@ -21,6 +21,15 @@ function PageAndDragManager() {
   // 1. Nonaktifkan drag pada semua gambar & asset di seluruh website
   useEffect(() => {
     const handleDragStart = (e) => {
+      // Kecualikan elemen drag handle atau baris kartu di panel admin agar bisa di-reorder
+      if (
+        e.target.closest('.admin-reorder-col') ||
+        e.target.closest('.admin-drag-handle') ||
+        e.target.closest('.admin-card-row')
+      ) {
+        return
+      }
+
       if (
         e.target.tagName === 'IMG' ||
         e.target.closest('img') ||

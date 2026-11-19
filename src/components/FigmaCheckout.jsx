@@ -8,7 +8,7 @@ const LINE_ADMIN_URL = 'https://line.me/ti/p/DXxrMczHYq'
 
 export default function FigmaCheckout() {
   const navigate = useNavigate()
-  const { cart, count, subtotal, clear, reduceSlots } = useApp()
+  const { cart, count, subtotal, clear, reduceSlots, addOrder } = useApp()
 
   const [form, setForm] = useState({
     name: '',
@@ -148,6 +148,23 @@ export default function FigmaCheckout() {
     setCompletedTotals({ grandTotal, toPayNow, ongkir })
     setCompletedCheckoutLabel(checkoutTypeLabel)
     setCompletedCheckoutSummary(checkoutSubtitle)
+
+    // Simpan ke riwayat pesanan akun
+    if (addOrder) {
+      addOrder({
+        code: newCode,
+        items: [...cart],
+        grandTotal,
+        toPayNow,
+        paymentOption: form.paymentOption,
+        shippingFee: ongkir,
+        checkoutTypeLabel,
+        checkoutSummary: checkoutSubtitle,
+        recipientName: form.name,
+        phone: form.phone,
+        address: form.address + (form.city ? ', ' + form.city : ''),
+      })
+    }
 
     // Kurangi slot kartu yang dibeli secara otomatis
     reduceSlots(cart)

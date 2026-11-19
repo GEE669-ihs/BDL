@@ -6,6 +6,14 @@ const REGISTERED_USERS_KEY = 'closerz_registered_users'
 const SLOTS_STORAGE_KEY = 'closerz_card_slots'
 const GROUPS_STORAGE_KEY = 'closerz_admin_groups'
 const CARDS_STORAGE_KEY = 'closerz_admin_cards'
+const ORDERS_STORAGE_KEY = 'closerz_user_orders'
+
+export const ADMIN_CREDENTIALS = {
+  email: 'admin@closerz.com',
+  password: 'admin412504',
+  role: 'admin',
+  name: 'Admin Closerz',
+}
 
 const getInitialRegisteredUsers = () => {
   try {
@@ -14,7 +22,18 @@ const getInitialRegisteredUsers = () => {
       const parsed = JSON.parse(saved)
       if (Array.isArray(parsed)) return parsed
     }
-  } catch {}
+  } catch { }
+  return []
+}
+
+const getInitialOrders = () => {
+  try {
+    const saved = localStorage.getItem(ORDERS_STORAGE_KEY)
+    if (saved) {
+      const parsed = JSON.parse(saved)
+      if (Array.isArray(parsed)) return parsed
+    }
+  } catch { }
   return []
 }
 
@@ -25,7 +44,7 @@ const getInitialGroups = () => {
       const parsed = JSON.parse(saved)
       if (Array.isArray(parsed) && parsed.length > 0) return parsed
     }
-  } catch {}
+  } catch { }
   return DEFAULT_GROUPS
 }
 
@@ -50,7 +69,7 @@ const getInitialCards = () => {
         })
       }
     }
-  } catch {}
+  } catch { }
   return FIGMA_CATALOG_CARDS
 }
 
@@ -72,7 +91,7 @@ const getInitialSlots = (cards) => {
         return next
       }
     }
-  } catch {}
+  } catch { }
   const initial = {}
   cards.forEach((c) => {
     initial[c.id] = c.slots
@@ -109,7 +128,7 @@ export function AppProvider({ children }) {
       const updated = [...filtered, newUser]
       try {
         localStorage.setItem(REGISTERED_USERS_KEY, JSON.stringify(updated))
-      } catch {}
+      } catch { }
       return updated
     })
     return newUser
@@ -118,6 +137,7 @@ export function AppProvider({ children }) {
   const isEmailRegistered = (email) => {
     if (!email) return false
     const cleanEmail = email.trim().toLowerCase()
+    if (cleanEmail === ADMIN_CREDENTIALS.email) return true
     return registeredUsers.some((u) => u.email.toLowerCase() === cleanEmail)
   }
 
@@ -125,23 +145,57 @@ export function AppProvider({ children }) {
   const [groups, setGroups] = useState(getInitialGroups)
   const [catalogCards, setCatalogCards] = useState(getInitialCards)
 
-  // Cart
+  // Cart & Orders
   const [cart, setCart] = useState([])
+  const [orders, setOrders] = useState(getInitialOrders)
   const [toast, setToast] = useState(null)
   const [slots, setSlots] = useState(() => getInitialSlots(catalogCards))
+
+  // Sync orders to localStorage
+  useEffect(() => {
+    try {
+      localStorage.setItem(ORDERS_STORAGE_KEY, JSON.stringify(orders))
+    } catch { }
+  }, [orders])
+
+  const addOrder = (orderData) => {
+    const newOrder = {
+      id: orderData.code || 'GCZ-' + Date.now().toString(36).toUpperCase(),
+      createdAt: new Date().toISOString(),
+      userEmail: user?.email ? user.email.toLowerCase() : (orderData.email || 'guest').toLowerCase(),
+      items: orderData.items || [],
+      grandTotal: orderData.grandTotal || 0,
+      toPayNow: orderData.toPayNow || 0,
+      paymentOption: orderData.paymentOption || 'dp50',
+      shippingFee: orderData.shippingFee || 0,
+      checkoutTypeLabel: orderData.checkoutTypeLabel || 'Ready Stock',
+      checkoutSummary: orderData.checkoutSummary || '',
+      recipientName: orderData.recipientName || '',
+      phone: orderData.phone || '',
+      address: orderData.address || '',
+    }
+
+    setOrders((prev) => [newOrder, ...prev])
+    return newOrder
+  }
+
+  // Riwayat pesanan khusus untuk user yang sedang aktif login
+  const userOrders = user?.email
+    ? orders.filter((o) => (o.userEmail || '').toLowerCase() === user.email.toLowerCase())
+    : []
 
   // Sync groups to localStorage
   useEffect(() => {
     try {
       localStorage.setItem(GROUPS_STORAGE_KEY, JSON.stringify(groups))
-    } catch {}
+    } catch { }
   }, [groups])
 
   // Sync cards to localStorage
   useEffect(() => {
     try {
       localStorage.setItem(CARDS_STORAGE_KEY, JSON.stringify(catalogCards))
-    } catch {}
+    } catch { }
   }, [catalogCards])
 
   const showToast = (msg) => {
@@ -157,6 +211,7 @@ export function AppProvider({ children }) {
 
   const logout = () => {
     localStorage.removeItem(SESSION_KEY)
+    sessionStorage.removeItem('closerz_admin_logged_in')
     setUser(null)
     setCart([])
   }
@@ -259,7 +314,7 @@ export function AppProvider({ children }) {
       })
       try {
         localStorage.setItem(SLOTS_STORAGE_KEY, JSON.stringify(next))
-      } catch {}
+      } catch { }
       return next
     })
 
@@ -333,7 +388,7 @@ export function AppProvider({ children }) {
       const next = { ...prev, [cardId]: current + amount }
       try {
         localStorage.setItem(SLOTS_STORAGE_KEY, JSON.stringify(next))
-      } catch {}
+      } catch { }
       return next
     })
     setCatalogCards((prev) =>
@@ -352,7 +407,7 @@ export function AppProvider({ children }) {
       const next = { ...prev, [cardId]: val }
       try {
         localStorage.setItem(SLOTS_STORAGE_KEY, JSON.stringify(next))
-      } catch {}
+      } catch { }
       return next
     })
     setCatalogCards((prev) =>
@@ -378,12 +433,38 @@ export function AppProvider({ children }) {
 
   const updateCard = (id, updatedFields) => {
     setCatalogCards((prev) =>
-      prev.map((c) => (c.id === id ? { ...c, ...updatedFields } : c))
+      prev.map((c) => {
+        if (c.id === id) {
+          const next = { ...c, ...updatedFields }
+          if (updatedFields.slots !== undefined) {
+            const numSlots = Math.max(0, Number(updatedFields.slots) || 0)
+            next.slots = numSlots
+            next.stock = numSlots
+          }
+          return next
+        }
+        return c
+      })
     )
     if (updatedFields.slots !== undefined) {
-      setSlots((prev) => ({ ...prev, [id]: Number(updatedFields.slots) }))
+      const numSlots = Math.max(0, Number(updatedFields.slots) || 0)
+      setSlots((prev) => {
+        const nextSlots = { ...prev, [id]: numSlots }
+        try {
+          localStorage.setItem(SLOTS_STORAGE_KEY, JSON.stringify(nextSlots))
+        } catch { }
+        return nextSlots
+      })
     }
     showToast('Data photocard berhasil diperbarui.')
+  }
+
+  const reorderCards = (newCards) => {
+    setCatalogCards(newCards)
+    try {
+      localStorage.setItem(CARDS_STORAGE_KEY, JSON.stringify(newCards))
+    } catch { }
+    showToast('Urutan posisi photocard berhasil disimpan!')
   }
 
   const deleteCard = (id) => {
@@ -443,8 +524,13 @@ export function AppProvider({ children }) {
         setCardSlotDirect,
         toggleCardStatus,
         updateCard,
+        reorderCards,
         deleteCard,
         resetToDefault,
+        ADMIN_CREDENTIALS,
+        orders,
+        userOrders,
+        addOrder,
       }}
     >
       {children}

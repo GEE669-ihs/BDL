@@ -207,6 +207,12 @@
   color: #7dc8ff;
 }
 
+.figma-profile-wrapper {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
 .figma-profile-btn {
   display: flex;
   flex-direction: column;
@@ -216,6 +222,12 @@
   border: none;
   cursor: pointer;
   padding: 4px;
+  transition: all 0.2s ease;
+}
+
+.figma-profile-btn.is-menu-open .figma-profile-avatar {
+  border-color: #7dc8ff;
+  box-shadow: 0 0 10px rgba(125, 200, 255, 0.4);
 }
 
 .figma-profile-avatar {
@@ -224,6 +236,7 @@
   border-radius: 50%;
   object-fit: cover;
   border: 1.5px solid #c7dde9;
+  transition: all 0.2s ease;
 }
 
 .figma-profile-label {
@@ -231,6 +244,286 @@
   font-size: 11px;
   color: #ffffff;
   font-weight: 500;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   DROPDOWN MENU PROFIL & RIWAYAT PEMBELIAN
+   ───────────────────────────────────────────────────────────── */
+.figma-profile-dropdown {
+  position: absolute;
+  top: calc(100% + 14px);
+  right: 0;
+  width: 330px;
+  max-width: calc(100vw - 32px);
+  background: #1b1333;
+  background-image: linear-gradient(180deg, #221642 0%, #160e2b 100%);
+  border: 1.5px solid rgba(125, 200, 255, 0.35);
+  border-radius: 18px;
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.7), 0 0 24px rgba(106, 79, 214, 0.3);
+  backdrop-filter: blur(16px);
+  z-index: 200;
+  overflow: hidden;
+  animation: profileDropdownFade 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  text-align: left;
+}
+
+@keyframes profileDropdownFade {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.profile-dropdown-header {
+  padding: 16px 18px;
+  border-bottom: 1px solid rgba(241, 230, 248, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.profile-dropdown-user-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.profile-user-name {
+  font-family: 'Unbounded', sans-serif;
+  font-size: 13px;
+  font-weight: 800;
+  color: #ffffff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.profile-user-email {
+  font-family: 'Figtree', sans-serif;
+  font-size: 11px;
+  color: #9cb8dd;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.profile-badge-user {
+  font-family: 'Unbounded', sans-serif;
+  font-size: 9px;
+  font-weight: 800;
+  color: #7dc8ff;
+  background: rgba(125, 200, 255, 0.15);
+  border: 1px solid rgba(125, 200, 255, 0.3);
+  padding: 2px 8px;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+
+.profile-dropdown-section {
+  padding: 14px 18px;
+}
+
+.profile-section-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.section-title {
+  font-family: 'Unbounded', sans-serif;
+  font-size: 11px;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: 0.02em;
+}
+
+.section-count {
+  font-size: 10px;
+  font-weight: 700;
+  color: #7dc8ff;
+  background: rgba(125, 200, 255, 0.12);
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+
+.profile-orders-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 250px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.profile-orders-list::-webkit-scrollbar {
+  width: 4px;
+}
+
+.profile-orders-list::-webkit-scrollbar-thumb {
+  background: rgba(125, 200, 255, 0.3);
+  border-radius: 999px;
+}
+
+.profile-orders-empty {
+  text-align: center;
+  padding: 24px 12px;
+  color: #9cb8dd;
+}
+
+.profile-orders-empty svg {
+  color: rgba(125, 200, 255, 0.45);
+  margin-bottom: 8px;
+}
+
+.empty-title {
+  font-family: 'Unbounded', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0 0 4px 0;
+}
+
+.empty-desc {
+  font-size: 11px;
+  color: #8fa0c0;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.profile-order-card {
+  background: rgba(10, 7, 22, 0.6);
+  border: 1px solid rgba(241, 230, 248, 0.12);
+  border-radius: 12px;
+  padding: 10px 12px;
+  transition: all 0.2s ease;
+}
+
+.profile-order-card:hover {
+  border-color: rgba(125, 200, 255, 0.35);
+  background: rgba(16, 11, 32, 0.85);
+}
+
+.order-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.order-code {
+  font-family: 'Unbounded', sans-serif;
+  font-size: 11px;
+  font-weight: 800;
+  color: #7dc8ff;
+}
+
+.order-status-pill {
+  font-size: 9px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.order-status-pill.is-ready {
+  background: rgba(52, 211, 153, 0.18);
+  color: #34d399;
+}
+
+.order-status-pill.is-po {
+  background: rgba(215, 184, 255, 0.2);
+  color: #d7b8ff;
+}
+
+.order-card-date {
+  font-size: 10px;
+  color: #8fa0c0;
+  margin-bottom: 8px;
+}
+
+.order-items-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin-bottom: 8px;
+  border-top: 1px dashed rgba(241, 230, 248, 0.1);
+  padding-top: 6px;
+}
+
+.order-item-line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 11px;
+}
+
+.order-item-line .item-title {
+  color: #e0e7ff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 180px;
+}
+
+.order-item-line .item-qty {
+  color: #9cb8dd;
+  font-weight: 600;
+}
+
+.order-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 6px;
+  border-top: 1px solid rgba(241, 230, 248, 0.08);
+}
+
+.order-pay-mode {
+  font-size: 10px;
+  color: #9cb8dd;
+}
+
+.order-pay-amount {
+  font-family: 'Unbounded', sans-serif;
+  font-size: 11px;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.profile-dropdown-footer {
+  padding: 12px 18px;
+  border-top: 1px solid rgba(241, 230, 248, 0.12);
+  background: rgba(10, 7, 22, 0.4);
+}
+
+.profile-dropdown-logout-btn {
+  width: 100%;
+  height: 38px;
+  border-radius: 10px;
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  color: #fca5a5;
+  font-family: 'Figtree', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.profile-dropdown-logout-btn:hover {
+  background: rgba(239, 68, 68, 0.3);
+  color: #ffffff;
+  border-color: #ef4444;
 }
 
 /* Admin Icon Button di sebelah profile */

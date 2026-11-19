@@ -99,6 +99,24 @@
   color: #180a33;
 }
 
+.figma-admin-btn-logout {
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  color: #fca5a5;
+  font-family: 'Figtree', sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+  padding: 8px 18px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.figma-admin-btn-logout:hover {
+  background: rgba(239, 68, 68, 0.35);
+  color: #ffffff;
+}
+
 /* Container */
 .figma-admin-container {
   max-width: 1312px;
@@ -531,8 +549,10 @@
   font-weight: 800;
   padding: 2px 8px;
   border-radius: 999px;
-  cursor: pointer;
-  transition: all 0.2s ease;
+  cursor: default;
+  user-select: none;
+  display: inline-flex;
+  align-items: center;
   border: none;
 }
 
@@ -589,96 +609,6 @@
   color: #64748b;
 }
 
-/* Kontrol Penambahan Slot Kartu Awal */
-.admin-slot-controls-row {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  flex-wrap: wrap;
-  padding-top: 4px;
-}
-
-.slot-ctrl-label {
-  font-size: 11px;
-  font-weight: 700;
-  color: #9cb8dd;
-  margin-right: 2px;
-}
-
-.btn-slot-quick {
-  background: rgba(125, 200, 255, 0.15);
-  border: 1px solid rgba(125, 200, 255, 0.35);
-  color: #7dc8ff;
-  font-family: 'Unbounded', sans-serif;
-  font-size: 11px;
-  font-weight: 800;
-  padding: 3px 8px;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.btn-slot-quick:hover {
-  background: #7dc8ff;
-  color: #180a33;
-}
-
-.btn-slot-set {
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  color: #ffffff;
-  font-size: 11px;
-  font-weight: 600;
-  padding: 3px 8px;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.btn-slot-set:hover {
-  background: rgba(255, 255, 255, 0.2);
-}
-
-.slot-inline-edit {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.slot-inline-input {
-  width: 55px;
-  height: 26px;
-  background: rgba(10, 8, 24, 0.9);
-  border: 1px solid #7dc8ff;
-  border-radius: 6px;
-  color: #ffffff;
-  font-size: 12px;
-  font-weight: 700;
-  padding: 0 6px;
-  text-align: center;
-}
-
-.btn-slot-save {
-  background: #34d399;
-  border: none;
-  color: #064e3b;
-  font-size: 11px;
-  font-weight: 800;
-  padding: 4px 8px;
-  border-radius: 6px;
-  cursor: pointer;
-}
-
-.btn-slot-cancel {
-  background: rgba(255, 255, 255, 0.1);
-  border: none;
-  color: #ffffff;
-  font-size: 11px;
-  padding: 4px 6px;
-  border-radius: 6px;
-  cursor: pointer;
-}
-
 .admin-delete-btn {
   background: rgba(239, 68, 68, 0.15);
   border: 1px solid rgba(239, 68, 68, 0.4);
@@ -694,4 +624,408 @@
 .admin-delete-btn:hover {
   background: rgba(239, 68, 68, 0.35);
   color: #ffffff;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   REORDER & DRAG HANDLE STYLES
+   ───────────────────────────────────────────────────────────── */
+.admin-reorder-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding-right: 4px;
+  user-select: none;
+}
+
+.admin-drag-handle {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  color: #7dc8ff;
+  cursor: grab;
+  padding: 4px 6px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.admin-drag-handle:hover {
+  background: rgba(125, 200, 255, 0.15);
+  color: #ffffff;
+}
+
+.admin-drag-handle:active {
+  cursor: grabbing;
+}
+
+.reorder-badge-pos {
+  font-family: 'Unbounded', sans-serif;
+  font-size: 10px;
+  font-weight: 800;
+  color: #9cb8dd;
+  background: rgba(125, 200, 255, 0.12);
+  padding: 2px 6px;
+  border-radius: 6px;
+}
+
+.admin-reorder-steppers {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.admin-step-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #c7dde9;
+  width: 24px;
+  height: 20px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.admin-step-btn:hover:not(:disabled) {
+  background: #7dc8ff;
+  color: #160f1c;
+  border-color: #7dc8ff;
+}
+
+.admin-step-btn:disabled {
+  opacity: 0.25;
+  cursor: not-allowed;
+}
+
+/* Dragging state */
+.admin-card-row {
+  cursor: default;
+}
+
+.admin-card-row.is-dragging {
+  opacity: 0.45;
+  border: 2px dashed #7dc8ff;
+  background: rgba(125, 200, 255, 0.08);
+  transform: scale(0.99);
+}
+
+.admin-card-row.is-drag-over {
+  border: 2px dashed #34d399;
+  background: rgba(52, 211, 153, 0.12);
+}
+
+/* Edit & Action Buttons */
+.admin-card-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.admin-edit-btn {
+  background: rgba(125, 200, 255, 0.15);
+  border: 1px solid rgba(125, 200, 255, 0.4);
+  color: #7dc8ff;
+  font-family: 'Figtree', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 7px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+}
+
+.admin-edit-btn:hover {
+  background: #7dc8ff;
+  color: #160f1c;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   MODAL EDIT PHOTOCARD
+   ───────────────────────────────────────────────────────────── */
+.admin-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(8, 5, 18, 0.82);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.admin-edit-modal {
+  background: #1e1435;
+  background-image: linear-gradient(180deg, #251944 0%, #1a102e 100%);
+  border: 1.5px solid rgba(125, 200, 255, 0.35);
+  border-radius: 20px;
+  width: 100%;
+  max-width: 500px;
+  padding: 28px 24px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6), 0 0 30px rgba(106, 79, 214, 0.3);
+  animation: modalScaleUp 0.2s ease-out;
+}
+
+@keyframes modalScaleUp {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.admin-edit-modal-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid rgba(241, 230, 248, 0.15);
+}
+
+.admin-modal-badge {
+  font-family: 'Unbounded', sans-serif;
+  font-size: 10px;
+  font-weight: 800;
+  color: #7dc8ff;
+  background: rgba(125, 200, 255, 0.15);
+  border: 1px solid rgba(125, 200, 255, 0.35);
+  padding: 2px 8px;
+  border-radius: 999px;
+  display: inline-block;
+  margin-bottom: 6px;
+}
+
+.admin-modal-title {
+  font-family: 'Unbounded', sans-serif;
+  font-size: 18px;
+  font-weight: 800;
+  color: #ffffff;
+  margin: 0;
+}
+
+.admin-modal-close {
+  background: rgba(255, 255, 255, 0.08);
+  border: none;
+  color: #c7dde9;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.admin-modal-close:hover {
+  background: rgba(239, 68, 68, 0.3);
+  color: #ffffff;
+}
+
+.admin-edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.edit-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.edit-form-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: #c7dde9;
+}
+
+.edit-status-toggle-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.edit-status-btn {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(241, 230, 248, 0.2);
+  color: #c7dde9;
+  font-family: 'Unbounded', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 10px 8px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.edit-status-btn.is-active.is-ready {
+  background: rgba(52, 211, 153, 0.2);
+  border-color: #34d399;
+  color: #34d399;
+  box-shadow: 0 0 12px rgba(52, 211, 153, 0.25);
+}
+
+.edit-status-btn.is-active.is-po {
+  background: rgba(215, 184, 255, 0.25);
+  border-color: #d7b8ff;
+  color: #d7b8ff;
+  box-shadow: 0 0 12px rgba(215, 184, 255, 0.25);
+}
+
+.edit-status-desc {
+  font-size: 12px;
+  color: #9cb8dd;
+  line-height: 1.4;
+}
+
+.edit-slot-stepper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.slot-stepper-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: rgba(125, 200, 255, 0.15);
+  border: 1px solid rgba(125, 200, 255, 0.35);
+  color: #7dc8ff;
+  font-family: 'Unbounded', sans-serif;
+  font-size: 18px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.slot-stepper-btn:hover {
+  background: #7dc8ff;
+  color: #160f1c;
+}
+
+.slot-stepper-input {
+  flex: 1;
+  height: 44px;
+  border-radius: 12px;
+  border: 1px solid rgba(125, 200, 255, 0.35);
+  background: rgba(10, 8, 24, 0.85);
+  color: #ffffff;
+  font-family: 'Unbounded', sans-serif;
+  font-size: 18px;
+  font-weight: 800;
+  text-align: center;
+  outline: none;
+}
+
+.edit-slot-shortcuts {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.shortcuts-label {
+  font-size: 11px;
+  color: #9cb8dd;
+  font-weight: 600;
+}
+
+.slot-pill-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: #ffffff;
+  font-family: 'Unbounded', sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.slot-pill-btn:hover {
+  background: rgba(125, 200, 255, 0.3);
+  border-color: #7dc8ff;
+}
+
+.edit-form-row-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.edit-text-input {
+  height: 40px;
+  border-radius: 10px;
+  border: 1px solid rgba(241, 230, 248, 0.25);
+  background: rgba(10, 8, 24, 0.7);
+  color: #ffffff;
+  padding: 0 12px;
+  font-family: 'Figtree', sans-serif;
+  font-size: 14px;
+  outline: none;
+}
+
+.edit-text-input:focus {
+  border-color: #7dc8ff;
+}
+
+.admin-edit-modal-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.edit-btn-cancel {
+  flex: 1;
+  height: 44px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  font-family: 'Figtree', sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.edit-btn-cancel:hover {
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.edit-btn-save {
+  flex: 1.4;
+  height: 44px;
+  border-radius: 12px;
+  background: #7dc8ff;
+  border: none;
+  color: #160f1c;
+  font-family: 'Figtree', sans-serif;
+  font-weight: 800;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.edit-btn-save:hover {
+  background: #9fe2ff;
+  box-shadow: 0 0 16px rgba(125, 200, 255, 0.4);
 }

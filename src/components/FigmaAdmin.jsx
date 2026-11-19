@@ -6,18 +6,42 @@ import './FigmaAdmin.css'
 export default function FigmaAdmin() {
   const navigate = useNavigate()
   const {
+    user,
+    logout,
     groups,
     catalogCards,
     getCardSlot,
-    increaseSlot,
-    setCardSlotDirect,
-    toggleCardStatus,
+    updateCard,
+    reorderCards,
     addGroup,
     deleteGroup,
     addCard,
     deleteCard,
     resetToDefault,
+    ADMIN_CREDENTIALS,
   } = useApp()
+
+  // Sesi Login Admin (Autentikasi Email & Password Khusus)
+  const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(() => {
+    return sessionStorage.getItem('closerz_admin_logged_in') === 'true' || user?.role === 'admin'
+  })
+
+  useEffect(() => {
+    if (sessionStorage.getItem('closerz_admin_logged_in') === 'true' || user?.role === 'admin') {
+      setIsAdminLoggedIn(true)
+    }
+  }, [user])
+
+  const handleReturnToWebsite = () => {
+    navigate('/landing')
+  }
+
+  const handleAdminLogout = () => {
+    sessionStorage.removeItem('closerz_admin_logged_in')
+    setIsAdminLoggedIn(false)
+    logout()
+    navigate('/login-figma')
+  }
 
   // State Form Tambah Grup
   const [groupName, setGroupName] = useState('')
@@ -33,44 +57,110 @@ export default function FigmaAdmin() {
   const [imageUrl, setImageUrl] = useState('')
   const [imagePreview, setImagePreview] = useState(null)
 
-  // Quick edit slot state
-  const [editingSlotId, setEditingSlotId] = useState(null)
-  const [tempSlotVal, setTempSlotVal] = useState('')
+  // State Edit Modal Khusus
+  const [editingCard, setEditingCard] = useState(null)
+  const [editStatus, setEditStatus] = useState('Ready Stock')
+  const [editSlots, setEditSlots] = useState(10)
+  const [editPrice, setEditPrice] = useState(18000)
+  const [editEdition, setEditEdition] = useState('')
 
-  // PIN Protection State (Khusus Teman - 6 Digit)
-  const ADMIN_PIN = '240404'
-  const [isUnlocked, setIsUnlocked] = useState(() => {
-    return sessionStorage.getItem('closerz_admin_unlocked') === 'true'
-  })
-  const [adminPinInput, setAdminPinInput] = useState('')
-  const [adminPinError, setAdminPinError] = useState('')
+  // Reordering (Hold & Geser / Drag & Drop) State
+  const dragItem = useRef(null)
+  const dragOverItem = useRef(null)
+  const [isDraggingIdx, setIsDraggingIdx] = useState(null)
+  const [dragOverIdx, setDragOverIdx] = useState(null)
 
-  const handleUnlockAdmin = (e) => {
+  const handleDragStart = (e, index) => {
+    dragItem.current = index
+    setIsDraggingIdx(index)
+    e.dataTransfer.effectAllowed = 'move'
+    e.dataTransfer.setData('text/plain', String(index))
+  }
+
+  const handleDragEnter = (e, index) => {
+    dragOverItem.current = index
+    setDragOverIdx(index)
+  }
+
+  const handleDragOver = (e) => {
     e.preventDefault()
-    if (adminPinInput.trim() === ADMIN_PIN) {
-      sessionStorage.setItem('closerz_admin_unlocked', 'true')
-      setIsUnlocked(true)
-      setAdminPinError('')
-    } else {
-      setAdminPinError('PIN salah! Akses ke panel admin ditolak.')
-    }
+    e.dataTransfer.dropEffect = 'move'
   }
 
-  // Kembali ke website dan kunci kembali sesi admin
-  const handleReturnToWebsite = (e) => {
-    if (e && e.preventDefault) e.preventDefault()
-    sessionStorage.removeItem('closerz_admin_unlocked')
-    setIsUnlocked(false)
-    setAdminPinInput('')
-    navigate('/landing')
+  const handleDrop = (e, targetIndex) => {
+    e.preventDefault()
+    const sourceIndex = dragItem.current
+    if (sourceIndex === null || sourceIndex === undefined || sourceIndex === targetIndex) {
+      setIsDraggingIdx(null)
+      setDragOverIdx(null)
+      return
+    }
+
+    const nextCards = [...catalogCards]
+    const [movedCard] = nextCards.splice(sourceIndex, 1)
+    nextCards.splice(targetIndex, 0, movedCard)
+
+    reorderCards(nextCards)
+    setIsDraggingIdx(null)
+    setDragOverIdx(null)
+    dragItem.current = null
+    dragOverItem.current = null
   }
 
-  // Saat komponen admin unmount (pindah rute), selalu bersihkan izin unlock
-  useEffect(() => {
-    return () => {
-      sessionStorage.removeItem('closerz_admin_unlocked')
-    }
-  }, [])
+  const handleDragEnd = () => {
+    setIsDraggingIdx(null)
+    setDragOverIdx(null)
+    dragItem.current = null
+    dragOverItem.current = null
+  }
+
+  const handleMoveUp = (index) => {
+    if (index <= 0) return
+    const nextCards = [...catalogCards]
+    const [moved] = nextCards.splice(index, 1)
+    nextCards.splice(index - 1, 0, moved)
+    reorderCards(nextCards)
+  }
+
+  const handleMoveDown = (index) => {
+    if (index >= catalogCards.length - 1) return
+    const nextCards = [...catalogCards]
+    const [moved] = nextCards.splice(index, 1)
+    nextCards.splice(index + 1, 0, moved)
+    reorderCards(nextCards)
+  }
+
+  // Open & Close Edit Modal
+  const handleOpenEdit = (card) => {
+    const currentSlots = getCardSlot(card.id)
+    setEditingCard(card)
+    setEditStatus(card.status || 'Ready Stock')
+    setEditSlots(currentSlots)
+    setEditPrice(card.price || 18000)
+    setEditEdition(card.edition || '')
+  }
+
+  const handleCloseEdit = () => {
+    setEditingCard(null)
+  }
+
+  const handleSaveEdit = (e) => {
+    e.preventDefault()
+    if (!editingCard) return
+
+    updateCard(editingCard.id, {
+      status: editStatus,
+      slots: Math.max(0, parseInt(editSlots, 10) || 0),
+      price: Math.max(1000, parseInt(editPrice, 10) || 1000),
+      edition: editEdition.trim() || editingCard.edition,
+    })
+
+    setEditingCard(null)
+  }
+
+  const handleAdjustEditSlot = (delta) => {
+    setEditSlots((prev) => Math.max(0, Number(prev) + delta))
+  }
 
   const fileInputRef = useRef(null)
 
@@ -141,23 +231,14 @@ export default function FigmaAdmin() {
     }
   }
 
-  const handleStartEditSlot = (card) => {
-    setEditingSlotId(card.id)
-    setTempSlotVal(String(getCardSlot(card.id)))
-  }
-
-  const handleSaveEditSlot = (cardId) => {
-    setCardSlotDirect(cardId, tempSlotVal)
-    setEditingSlotId(null)
-  }
-
-  if (!isUnlocked) {
+  // ── GATE AUTENTIKASI ADMIN ──
+  if (!isAdminLoggedIn) {
     return (
       <div className="figma-admin-page">
         <header className="figma-admin-header">
           <div className="figma-admin-header-inner">
             <div className="figma-admin-brand">
-              <Link to="/landing" className="figma-admin-logo" onClick={handleReturnToWebsite}>
+              <Link to="/landing" className="figma-admin-logo">
                 <span className="logo-g">G</span>
                 <span className="logo-star">★</span>
                 <span className="logo-closerz">Closerz</span>
@@ -177,10 +258,10 @@ export default function FigmaAdmin() {
         </header>
 
         <main className="figma-admin-container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '65vh' }}>
-          <div className="figma-admin-card" style={{ maxWidth: 440, width: '100%', textAlign: 'center', padding: '40px 32px' }}>
+          <div className="figma-admin-card" style={{ maxWidth: 460, width: '100%', textAlign: 'center', padding: '44px 32px' }}>
             <div style={{
-              width: 58,
-              height: 58,
+              width: 62,
+              height: 62,
               borderRadius: '50%',
               background: 'rgba(125, 200, 255, 0.15)',
               border: '1.5px solid #7dc8ff',
@@ -189,75 +270,52 @@ export default function FigmaAdmin() {
               justifyContent: 'center',
               margin: '0 auto 18px',
               color: '#7dc8ff',
-              boxShadow: '0 0 16px rgba(125, 200, 255, 0.35)',
+              boxShadow: '0 0 20px rgba(125, 200, 255, 0.35)',
             }}>
-              <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-                <path d="M12 8v4" />
-                <circle cx="12" cy="15" r="1" fill="currentColor" />
+              <svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                <path d="M7 11V7a5 5 0 0 1 10 0v4" />
               </svg>
             </div>
 
-            <h2 style={{ fontFamily: 'Unbounded, sans-serif', fontSize: 20, color: '#ffffff', marginBottom: 8 }}>
-              Panel Admin Terkunci
+            <h2 style={{ fontFamily: 'Unbounded, sans-serif', fontSize: 20, color: '#ffffff', marginBottom: 10 }}>
+              Akses Khusus Admin
             </h2>
-            <p style={{ color: '#c7dde9', fontSize: 14, marginBottom: 24, lineHeight: 1.5 }}>
-              Halaman ini hanya dapat diakses oleh admin/pengelola. Silakan masukkan 6 digit PIN rahasia untuk melanjutkan:
+            <p style={{ color: '#c7dde9', fontSize: 14, marginBottom: 20, lineHeight: 1.6 }}>
+              Halaman ini hanya dapat diakses dengan akun email dan password khusus admin. Silakan login terlebih dahulu untuk melanjutkan:
             </p>
 
-            <form onSubmit={handleUnlockAdmin}>
-              <input
-                type="password"
-                inputMode="numeric"
-                maxLength={6}
-                placeholder="••••••"
-                value={adminPinInput}
-                onChange={(e) => {
-                  setAdminPinInput(e.target.value.replace(/\D/g, '').slice(0, 6))
-                  setAdminPinError('')
-                }}
-                autoFocus
-                style={{
-                  width: '100%',
-                  height: 50,
-                  borderRadius: 12,
-                  border: '1.5px solid rgba(125, 200, 255, 0.4)',
-                  background: 'rgba(10, 8, 24, 0.7)',
-                  color: '#ffffff',
-                  textAlign: 'center',
-                  fontSize: 22,
-                  letterSpacing: '0.3em',
-                  fontFamily: 'Unbounded, monospace',
-                  marginBottom: adminPinError ? 8 : 18,
-                  outline: 'none',
-                  boxSizing: 'border-box',
-                }}
-              />
+            <div style={{
+              background: 'rgba(10, 8, 24, 0.65)',
+              border: '1px solid rgba(125, 200, 255, 0.25)',
+              borderRadius: 14,
+              padding: '14px 18px',
+              marginBottom: 24,
+              textAlign: 'left',
+              fontSize: 13,
+            }}>
+              <div style={{ color: '#9cb8dd', fontWeight: 600, marginBottom: 4 }}>Akun Email Khusus Admin:</div>
+              <div style={{ color: '#ffffff', fontFamily: 'monospace', fontSize: 14 }}>{ADMIN_CREDENTIALS?.email || 'admin@closerz.com'}</div>
+            </div>
 
-              {adminPinError && (
-                <div style={{ color: '#ff8ca3', fontSize: 13, fontWeight: 600, marginBottom: 16 }}>
-                  {adminPinError}
-                </div>
-              )}
-
-              <div style={{ display: 'flex', gap: 12 }}>
-                <button
-                  type="button"
-                  className="figma-admin-btn-cancel"
-                  onClick={() => navigate('/landing')}
-                  style={{ flex: 1, height: 44, borderRadius: 12 }}
-                >
-                  Kembali
-                </button>
-                <button
-                  type="submit"
-                  className="figma-admin-btn-primary"
-                  style={{ flex: 1.2, height: 44, borderRadius: 12 }}
-                >
-                  Buka Admin
-                </button>
-              </div>
-            </form>
+            <div style={{ display: 'flex', gap: 12 }}>
+              <button
+                type="button"
+                className="figma-admin-btn-cancel"
+                onClick={handleReturnToWebsite}
+                style={{ flex: 1, height: 46, borderRadius: 12 }}
+              >
+                Kembali
+              </button>
+              <button
+                type="button"
+                className="figma-admin-btn-primary"
+                onClick={() => navigate('/login-figma')}
+                style={{ flex: 1.4, height: 46, borderRadius: 12 }}
+              >
+                Ke Halaman Login
+              </button>
+            </div>
           </div>
         </main>
       </div>
@@ -266,11 +324,11 @@ export default function FigmaAdmin() {
 
   return (
     <div className="figma-admin-page">
-      {/* ── TOP HEADER (Tema Halaman Utama Figma) ── */}
+      {/* ── TOP HEADER ── */}
       <header className="figma-admin-header">
         <div className="figma-admin-header-inner">
           <div className="figma-admin-brand">
-            <Link to="/landing" className="figma-admin-logo" onClick={handleReturnToWebsite}>
+            <Link to="/landing" className="figma-admin-logo">
               <span className="logo-g">G</span>
               <span className="logo-star">★</span>
               <span className="logo-closerz">Closerz</span>
@@ -283,8 +341,17 @@ export default function FigmaAdmin() {
               type="button"
               className="figma-admin-btn-back"
               onClick={handleReturnToWebsite}
+              title="Kembali melihat tampilan katalog website"
             >
               ← Kembali ke Website
+            </button>
+            <button
+              type="button"
+              className="figma-admin-btn-logout"
+              onClick={handleAdminLogout}
+              title="Logout dari akun admin"
+            >
+              Logout Admin
             </button>
           </div>
         </div>
@@ -295,9 +362,9 @@ export default function FigmaAdmin() {
         {/* Banner Ringkasan */}
         <section className="figma-admin-summary">
           <div>
-            <h1 className="figma-admin-title">Kelola Grup, Photocard & Slot</h1>
+            <h1 className="figma-admin-title">Kelola Urutan, Grup, Status & Slot</h1>
             <p className="figma-admin-subtitle">
-              Admin dapat menambah grup, mengatur status kartu (Ready Stock / Pre-Order), serta menambah atau mengubah sisa slot kartu awal maupun kartu baru.
+              Hold & geser kartu naik atau turun untuk mengatur urutan tampilan di katalog depan. Gunakan tombol Edit untuk mengatur status (Ready Stock / Pre-Order) dan kuota slot kartu.
             </p>
           </div>
           <div className="figma-admin-stats">
@@ -478,7 +545,6 @@ export default function FigmaAdmin() {
                       required
                     />
                   </div>
-                  {/* Label Harga saja, bukan Harga PO */}
                   <div className="form-group">
                     <label htmlFor="cardPrice">Harga (Rp) *</label>
                     <input
@@ -529,14 +595,14 @@ export default function FigmaAdmin() {
             </div>
           </div>
 
-          {/* ── KOLOM KANAN: DAFTAR KARTU & PENAMBAHAN SLOT KARTU AWAL ── */}
+          {/* ── KOLOM KANAN: DAFTAR KARTU, REORDER & EDIT SLOT/STATUS ── */}
           <div className="figma-admin-list-col">
             <div className="figma-admin-panel">
               <div className="panel-header-actions">
                 <div>
-                  <h2 className="panel-title">3. Daftar & Manajemen Slot Photocard ({catalogCards.length})</h2>
+                  <h2 className="panel-title">3. Urutan Posisi & Manajemen Photocard ({catalogCards.length})</h2>
                   <p className="panel-desc">
-                    Admin dapat menambah slot langsung pada kartu yang sudah tampil dari awal, mengganti status (Ready Stock / Pre-Order), atau menghapus kartu.
+                    <strong>Hold & geser (drag & drop)</strong> kartu naik atau turun untuk mengubah urutan tampilan di katalog website. Klik tombol <strong>Edit</strong> untuk mengubah status atau kuota slot kartu.
                   </p>
                 </div>
                 <button
@@ -553,14 +619,68 @@ export default function FigmaAdmin() {
                 </button>
               </div>
 
-              {/* Grid Daftar Kartu */}
+              {/* Grid Daftar Kartu dengan Reordering */}
               <div className="admin-cards-list">
-                {catalogCards.map((card) => {
+                {catalogCards.map((card, index) => {
                   const currentSlots = getCardSlot(card.id)
                   const isReady = card.status === 'Ready Stock'
+                  const isDragging = isDraggingIdx === index
+                  const isDragOver = dragOverIdx === index
 
                   return (
-                    <div key={card.id} className="admin-card-row">
+                    <div
+                      key={card.id}
+                      className={`admin-card-row ${isDragging ? 'is-dragging' : ''} ${isDragOver ? 'is-drag-over' : ''}`}
+                      draggable={true}
+                      onDragStart={(e) => handleDragStart(e, index)}
+                      onDragEnter={(e) => handleDragEnter(e, index)}
+                      onDragOver={handleDragOver}
+                      onDrop={(e) => handleDrop(e, index)}
+                      onDragEnd={handleDragEnd}
+                    >
+                      {/* Kontrol Drag & Drop Handle serta Tombol Geser Naik/Turun */}
+                      <div className="admin-reorder-col">
+                        <div
+                          className="admin-drag-handle"
+                          title="Hold dan geser ke atas/bawah untuk memindahkan urutan posisi kartu"
+                          aria-label="Hold dan geser urutan kartu"
+                        >
+                          <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true">
+                            <circle cx="8" cy="5" r="1.5" />
+                            <circle cx="16" cy="5" r="1.5" />
+                            <circle cx="8" cy="12" r="1.5" />
+                            <circle cx="16" cy="12" r="1.5" />
+                            <circle cx="8" cy="19" r="1.5" />
+                            <circle cx="16" cy="19" r="1.5" />
+                          </svg>
+                          <span className="reorder-badge-pos">#{index + 1}</span>
+                        </div>
+
+                        {/* Tombol Cepat Geser Naik / Turun */}
+                        <div className="admin-reorder-steppers">
+                          <button
+                            type="button"
+                            className="admin-step-btn"
+                            disabled={index === 0}
+                            onClick={() => handleMoveUp(index)}
+                            title="Geser posisi 1 tingkat ke atas"
+                            aria-label="Geser ke atas"
+                          >
+                            ▲
+                          </button>
+                          <button
+                            type="button"
+                            className="admin-step-btn"
+                            disabled={index === catalogCards.length - 1}
+                            onClick={() => handleMoveDown(index)}
+                            title="Geser posisi 1 tingkat ke bawah"
+                            aria-label="Geser ke bawah"
+                          >
+                            ▼
+                          </button>
+                        </div>
+                      </div>
+
                       {/* Thumbnail Foto */}
                       <div className="admin-card-thumb">
                         {card.image ? (
@@ -577,99 +697,39 @@ export default function FigmaAdmin() {
                         <div className="admin-card-title">
                           <span className="name">{card.name}</span>
                           <span className="group-badge">{card.group}</span>
-                          {/* Status Badge dengan tombol toggle */}
-                          <button
-                            type="button"
-                            className={`admin-status-badge ${isReady ? 'is-ready' : 'is-po'}`}
-                            onClick={() => toggleCardStatus(card.id)}
-                            title="Klik untuk mengubah status antara Ready Stock / Pre-Order"
-                          >
-                            {card.status || 'Ready Stock'} ⟲
-                          </button>
+                          <span className={`admin-status-badge ${isReady ? 'is-ready' : 'is-po'}`}>
+                            {card.status || 'Ready Stock'}
+                          </span>
                         </div>
                         <div className="admin-card-edition">{card.edition}</div>
 
                         {/* Rincian Harga & Slot */}
                         <div className="admin-card-meta">
-                          {/* Label Harga Saja */}
                           <span className="price-tag">
                             <strong>Harga:</strong> Rp{(card.price || 0).toLocaleString('id-ID')}
                           </span>
                           <span className="dot">•</span>
-                          {/* Sisa Slot */}
                           <span className="slot-tag">
                             <strong>Slot:</strong> {currentSlots} slot
                           </span>
                         </div>
-
-                        {/* Kontrol Penambahan Slot Kartu Awal */}
-                        <div className="admin-slot-controls-row">
-                          <span className="slot-ctrl-label">Tambah Slot:</span>
-                          <button
-                            type="button"
-                            className="btn-slot-quick"
-                            onClick={() => increaseSlot(card.id, 1)}
-                            title="Tambah 1 slot"
-                          >
-                            +1
-                          </button>
-                          <button
-                            type="button"
-                            className="btn-slot-quick"
-                            onClick={() => increaseSlot(card.id, 5)}
-                            title="Tambah 5 slot"
-                          >
-                            +5
-                          </button>
-                          <button
-                            type="button"
-                            className="btn-slot-quick"
-                            onClick={() => increaseSlot(card.id, 10)}
-                            title="Tambah 10 slot"
-                          >
-                            +10
-                          </button>
-
-                          {/* Edit Slot Langsung */}
-                          {editingSlotId === card.id ? (
-                            <div className="slot-inline-edit">
-                              <input
-                                type="number"
-                                min="0"
-                                value={tempSlotVal}
-                                onChange={(e) => setTempSlotVal(e.target.value)}
-                                className="slot-inline-input"
-                              />
-                              <button
-                                type="button"
-                                className="btn-slot-save"
-                                onClick={() => handleSaveEditSlot(card.id)}
-                              >
-                                Simpan
-                              </button>
-                              <button
-                                type="button"
-                                className="btn-slot-cancel"
-                                onClick={() => setEditingSlotId(null)}
-                              >
-                                Batal
-                              </button>
-                            </div>
-                          ) : (
-                            <button
-                              type="button"
-                              className="btn-slot-set"
-                              onClick={() => handleStartEditSlot(card)}
-                              title="Ubah nilai slot secara spesifik"
-                            >
-                              Ubah Slot
-                            </button>
-                          )}
-                        </div>
                       </div>
 
-                      {/* Hapus Kartu */}
+                      {/* Aksi: Edit & Hapus Kartu */}
                       <div className="admin-card-actions">
+                        <button
+                          type="button"
+                          className="admin-edit-btn"
+                          onClick={() => handleOpenEdit(card)}
+                          title="Edit status kartu dan tambah/kurangkan slot"
+                        >
+                          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                          </svg>
+                          <span>Edit</span>
+                        </button>
+
                         <button
                           type="button"
                           className="admin-delete-btn"
@@ -691,6 +751,141 @@ export default function FigmaAdmin() {
           </div>
         </div>
       </main>
+
+      {/* ── MODAL EDIT STATUS & SLOT PHOTOCARD ── */}
+      {editingCard && (
+        <div className="admin-modal-overlay" onClick={handleCloseEdit}>
+          <div className="admin-edit-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="admin-edit-modal-header">
+              <div>
+                <span className="admin-modal-badge">{editingCard.group}</span>
+                <h3 className="admin-modal-title">Edit Photocard: {editingCard.name}</h3>
+              </div>
+              <button
+                type="button"
+                className="admin-modal-close"
+                onClick={handleCloseEdit}
+                aria-label="Tutup modal"
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveEdit} className="admin-edit-form">
+              {/* 1. Status Kartu: Ready Stock vs Pre-Order */}
+              <div className="edit-form-group">
+                <label className="edit-form-label">Status Pembelian Kartu *</label>
+                <div className="edit-status-toggle-row">
+                  <button
+                    type="button"
+                    className={`edit-status-btn ${editStatus === 'Ready Stock' ? 'is-active is-ready' : ''}`}
+                    onClick={() => setEditStatus('Ready Stock')}
+                  >
+                    ● Ready Stock (Slot Terbatas)
+                  </button>
+                  <button
+                    type="button"
+                    className={`edit-status-btn ${editStatus === 'Pre-Order' ? 'is-active is-po' : ''}`}
+                    onClick={() => setEditStatus('Pre-Order')}
+                  >
+                    ★ Pre-Order (Slot Tak Terbatas)
+                  </button>
+                </div>
+                <div className="edit-status-desc">
+                  {editStatus === 'Ready Stock'
+                    ? 'Pengunjung dapat melihat jumlah "Sisa X slot" dan berkurang otomatis saat di-checkout.'
+                    : 'Pengunjung melihat label "Pre-Order" tanpa batas kuota slot.'}
+                </div>
+              </div>
+
+              {/* 2. Pengaturan Slot Kartu (Tambah / Kurangkan) */}
+              <div className="edit-form-group">
+                <label className="edit-form-label">
+                  Jumlah Sisa Slot Kartu {editStatus === 'Pre-Order' ? '(Cadangan saat beralih Ready Stock)' : '*'}
+                </label>
+                <div className="edit-slot-stepper">
+                  <button
+                    type="button"
+                    className="slot-stepper-btn btn-minus"
+                    onClick={() => handleAdjustEditSlot(-1)}
+                    title="Kurangi 1 slot"
+                  >
+                    −
+                  </button>
+                  <input
+                    type="number"
+                    min="0"
+                    value={editSlots}
+                    onChange={(e) => setEditSlots(Math.max(0, parseInt(e.target.value, 10) || 0))}
+                    className="slot-stepper-input"
+                  />
+                  <button
+                    type="button"
+                    className="slot-stepper-btn btn-plus"
+                    onClick={() => handleAdjustEditSlot(1)}
+                    title="Tambah 1 slot"
+                  >
+                    +
+                  </button>
+                </div>
+
+                {/* Shortcut Cepat Tambah/Kurang Slot */}
+                <div className="edit-slot-shortcuts">
+                  <span className="shortcuts-label">Ubah Cepat:</span>
+                  <button type="button" onClick={() => handleAdjustEditSlot(-5)} className="slot-pill-btn">-5</button>
+                  <button type="button" onClick={() => handleAdjustEditSlot(-1)} className="slot-pill-btn">-1</button>
+                  <button type="button" onClick={() => handleAdjustEditSlot(1)} className="slot-pill-btn">+1</button>
+                  <button type="button" onClick={() => handleAdjustEditSlot(5)} className="slot-pill-btn">+5</button>
+                  <button type="button" onClick={() => handleAdjustEditSlot(10)} className="slot-pill-btn">+10</button>
+                </div>
+              </div>
+
+              {/* 3. Harga & Edisi Album */}
+              <div className="edit-form-row-2">
+                <div className="edit-form-group">
+                  <label className="edit-form-label">Harga (Rp) *</label>
+                  <input
+                    type="number"
+                    step="1000"
+                    min="1000"
+                    value={editPrice}
+                    onChange={(e) => setEditPrice(e.target.value)}
+                    className="edit-text-input"
+                    required
+                  />
+                </div>
+                <div className="edit-form-group">
+                  <label className="edit-form-label">Edisi / Versi Album</label>
+                  <input
+                    type="text"
+                    value={editEdition}
+                    onChange={(e) => setEditEdition(e.target.value)}
+                    placeholder="Contoh: Photocard Album Ver. A"
+                    className="edit-text-input"
+                  />
+                </div>
+              </div>
+
+              {/* Actions Modal */}
+              <div className="admin-edit-modal-actions">
+                <button
+                  type="button"
+                  className="edit-btn-cancel"
+                  onClick={handleCloseEdit}
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  className="edit-btn-save"
+                >
+                  Simpan Perubahan
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

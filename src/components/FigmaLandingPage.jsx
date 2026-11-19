@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useApp } from '../context/AppContext'
 import FigmaCardFan from './FigmaCardFan'
@@ -42,10 +42,26 @@ export default function FigmaLandingPage() {
     groups,
     catalogCards,
     getCardSlot,
+    userOrders = [],
   } = useApp()
 
   // Sticky Navbar state
   const [isScrolled, setIsScrolled] = useState(false)
+
+  // Dropdown Menu Profil User Pribadi
+  const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false)
+  const profileMenuRef = useRef(null)
+
+  // Tutup dropdown saat klik di luar area profil
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (profileMenuRef.current && !profileMenuRef.current.contains(e.target)) {
+        setIsProfileDropdownOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
 
   // Countdown State
   const [timeLeft, setTimeLeft] = useState(() => calculateTimeLeft())
@@ -57,29 +73,11 @@ export default function FigmaLandingPage() {
   // FAQ Accordion State
   const [openFaqIndex, setOpenFaqIndex] = useState(0)
 
-  // PIN Admin State (Khusus Teman - 6 Digit)
-  const ADMIN_PIN = '412504'
-  const [showPinModal, setShowPinModal] = useState(false)
-  const [pinInput, setPinInput] = useState('')
-  const [pinError, setPinError] = useState('')
-
-  const handleAdminClick = () => {
-    // Admin harus selalu memasukkan PIN kembali saat mengakses admin dari website
-    setPinInput('')
-    setPinError('')
-    setShowPinModal(true)
-  }
-
-  const handlePinSubmit = (e) => {
-    e.preventDefault()
-    if (pinInput.trim() === ADMIN_PIN) {
-      sessionStorage.setItem('closerz_admin_unlocked', 'true')
-      setShowPinModal(false)
-      navigate('/admin')
-    } else {
-      setPinError('PIN salah! Akses ke panel admin ditolak.')
-    }
-  }
+  // Status Akun Admin
+  const isAdminUser =
+    user?.role === 'admin' ||
+    user?.email?.toLowerCase() === 'admin@closerz.com' ||
+    sessionStorage.getItem('closerz_admin_logged_in') === 'true'
 
   // Scroll watcher
   useEffect(() => {
@@ -242,47 +240,135 @@ export default function FigmaLandingPage() {
               <span className="figma-cart-count" data-node-id="1:42">{count || 0}</span>
             </button>
 
-            <button
-              type="button"
-              className="figma-profile-btn"
-              onClick={() => {
-                if (user) {
-                  if (window.confirm(`Halo ${user.name || user.email}! Ingin logout?`)) {
-                    logout()
+            {/* Profile Button & Riwayat Pembelian Dropdown */}
+            <div className="figma-profile-wrapper" ref={profileMenuRef}>
+              <button
+                type="button"
+                className={`figma-profile-btn ${isAdminUser ? 'is-admin-active' : ''} ${isProfileDropdownOpen ? 'is-menu-open' : ''}`}
+                onClick={() => {
+                  if (isAdminUser) {
+                    navigate('/admin')
+                    return
                   }
-                } else {
-                  navigate('/login-figma')
+                  if (user) {
+                    setIsProfileDropdownOpen((prev) => !prev)
+                  } else {
+                    navigate('/login-figma')
+                  }
+                }}
+                style={{ background: 'none', border: 'none', cursor: 'pointer' }}
+                title={
+                  isAdminUser
+                    ? 'Akun Admin aktif - Klik untuk kembali ke Panel Admin'
+                    : (user ? `Menu Akun: ${user.name || user.email}` : 'Masuk ke Akun')
                 }
-              }}
-              style={{ background: 'none', border: 'none', cursor: 'pointer' }}
-              title={user ? `Logged in as ${user.name || user.email}` : 'Masuk ke Akun'}
-              data-node-id="1:43"
-            >
-              <img
-                src={userAvatarImg}
-                alt="Profile Avatar"
-                className="figma-profile-avatar"
-                data-node-id="1:45"
-              />
-              <span className="figma-profile-label" data-node-id="1:44">
-                {user ? (user.name || 'Akun') : 'Profile'}
-              </span>
-            </button>
+                aria-expanded={isProfileDropdownOpen}
+                aria-haspopup="true"
+                data-node-id="1:43"
+              >
+                <img
+                  src={userAvatarImg}
+                  alt="Profile Avatar"
+                  className="figma-profile-avatar"
+                  style={isAdminUser ? { borderColor: '#7dc8ff', boxShadow: '0 0 10px rgba(125, 200, 255, 0.45)' } : {}}
+                  data-node-id="1:45"
+                />
+                <span className="figma-profile-label" style={isAdminUser ? { color: '#7dc8ff', fontWeight: 700 } : {}} data-node-id="1:44">
+                  {isAdminUser ? 'Admin' : (user ? (user.name || 'Akun') : 'Profile')}
+                </span>
+              </button>
 
-            {/* Tombol Icon Admin Khusus Teman (Ditaruh di sebelah profile) */}
-            <button
-              type="button"
-              className="figma-admin-icon-btn"
-              onClick={handleAdminClick}
-              title="Akses Panel Admin (PIN Khusus Teman)"
-              aria-label="Panel Admin"
-            >
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-                <path d="M12 8v4" />
-                <circle cx="12" cy="15" r="1" fill="currentColor" />
-              </svg>
-            </button>
+              {/* Dropdown Menu untuk User Pribadi (Riwayat Pembelian & Log Out) */}
+              {isProfileDropdownOpen && user && !isAdminUser && (
+                <div className="figma-profile-dropdown" role="menu">
+                  {/* 1. Header Akun */}
+                  <div className="profile-dropdown-header">
+                    <div className="profile-dropdown-user-info">
+                      <span className="profile-user-name">{user.name || 'Member Closerz'}</span>
+                      <span className="profile-user-email">{user.email}</span>
+                    </div>
+                    <span className="profile-badge-user">Akun Pribadi</span>
+                  </div>
+
+                  {/* 2. Daftar Riwayat Pembelian */}
+                  <div className="profile-dropdown-section">
+                    <div className="profile-section-title-row">
+                      <span className="section-title">Riwayat Pembelian</span>
+                      <span className="section-count">{userOrders.length} Pesanan</span>
+                    </div>
+
+                    <div className="profile-orders-list">
+                      {userOrders.length === 0 ? (
+                        <div className="profile-orders-empty">
+                          <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                            <circle cx="9" cy="21" r="1" />
+                            <circle cx="20" cy="21" r="1" />
+                            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
+                          </svg>
+                          <p className="empty-title">Belum Ada Riwayat Pesanan</p>
+                          <p className="empty-desc">Pesanan yang Anda buat akan tercatat otomatis di sini.</p>
+                        </div>
+                      ) : (
+                        userOrders.map((order) => (
+                          <div key={order.id} className="profile-order-card">
+                            <div className="order-card-header">
+                              <span className="order-code">#{order.id}</span>
+                              <span className={`order-status-pill ${order.checkoutTypeLabel?.toLowerCase().includes('po') ? 'is-po' : 'is-ready'}`}>
+                                {order.checkoutTypeLabel || 'Pesanan'}
+                              </span>
+                            </div>
+                            <div className="order-card-date">
+                              {new Date(order.createdAt).toLocaleDateString('id-ID', {
+                                day: 'numeric',
+                                month: 'short',
+                                year: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit',
+                              })}
+                            </div>
+                            <div className="order-items-summary">
+                              {order.items?.map((it, idx) => (
+                                <div key={idx} className="order-item-line">
+                                  <span className="item-title">• {it.name} ({it.group})</span>
+                                  <span className="item-qty">{it.qty || 1} pcs</span>
+                                </div>
+                              ))}
+                            </div>
+                            <div className="order-card-footer">
+                              <span className="order-pay-mode">
+                                {order.paymentOption === 'dp50' ? 'DP 50%' : 'Lunas'}
+                              </span>
+                              <span className="order-pay-amount">
+                                Rp{(order.toPayNow || order.grandTotal || 0).toLocaleString('id-ID')}
+                              </span>
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
+
+                  {/* 3. Tombol Logout */}
+                  <div className="profile-dropdown-footer">
+                    <button
+                      type="button"
+                      className="profile-dropdown-logout-btn"
+                      onClick={() => {
+                        setIsProfileDropdownOpen(false)
+                        logout()
+                      }}
+                    >
+                      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                        <polyline points="16 17 21 12 16 7" />
+                        <line x1="21" y1="12" x2="9" y2="12" />
+                      </svg>
+                      <span>Log Out</span>
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </header>
@@ -606,75 +692,6 @@ export default function FigmaLandingPage() {
           </p>
         </div>
       </footer>
-
-      {/* ── MODAL PIN ADMIN KHUSUS TEMAN ── */}
-      {showPinModal && (
-        <div
-          className="figma-pin-modal-backdrop"
-          onClick={() => setShowPinModal(false)}
-        >
-          <div
-            className="figma-pin-modal"
-            onClick={(e) => e.stopPropagation()}
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="pin-modal-title"
-          >
-            <div className="figma-pin-modal-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-                <path d="M12 8v4" />
-                <circle cx="12" cy="15" r="1" fill="currentColor" />
-              </svg>
-            </div>
-
-            <h3 id="pin-modal-title" className="figma-pin-modal-title">
-              Akses Panel Admin
-            </h3>
-            <p className="figma-pin-modal-desc">
-              Panel ini khusus untuk pengelola. Silakan masukkan 6 digit PIN rahasia untuk melanjutkan:
-            </p>
-
-            <form onSubmit={handlePinSubmit}>
-              <input
-                type="password"
-                inputMode="numeric"
-                maxLength={6}
-                placeholder="••••••"
-                value={pinInput}
-                onChange={(e) => {
-                  setPinInput(e.target.value.replace(/\D/g, '').slice(0, 6))
-                  setPinError('')
-                }}
-                autoFocus
-                className="figma-pin-modal-input"
-              />
-
-              {pinError && (
-                <div className="figma-pin-modal-error">
-                  {pinError}
-                </div>
-              )}
-
-              <div className="figma-pin-modal-actions">
-                <button
-                  type="button"
-                  className="figma-pin-modal-btn-cancel"
-                  onClick={() => setShowPinModal(false)}
-                >
-                  Batal
-                </button>
-                <button
-                  type="submit"
-                  className="figma-pin-modal-btn-submit"
-                >
-                  Buka Admin
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
     </div>
   )
 }
