@@ -239,11 +239,9 @@ export default function FigmaAdmin() {
           <div className="figma-admin-header-inner">
             <div className="figma-admin-brand">
               <Link to="/landing" className="figma-admin-logo">
-                <span className="logo-g">G</span>
-                <span className="logo-star">★</span>
-                <span className="logo-closerz">Closerz</span>
+                <span className="logo-brand">Closerz</span>
+                <span className="logo-panel-tag">Admin</span>
               </Link>
-              <span className="figma-admin-badge">Admin Dashboard</span>
             </div>
             <div className="figma-admin-nav-actions">
               <button
@@ -259,52 +257,31 @@ export default function FigmaAdmin() {
         </header>
 
         <main className="figma-admin-container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '65vh' }}>
-          <div className="figma-admin-card" style={{ maxWidth: 460, width: '100%', textAlign: 'center', padding: '44px 32px' }}>
-            <div style={{
-              width: 62,
-              height: 62,
-              borderRadius: '50%',
-              background: 'rgba(125, 200, 255, 0.15)',
-              border: '1.5px solid #7dc8ff',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              margin: '0 auto 18px',
-              color: '#7dc8ff',
-              boxShadow: '0 0 20px rgba(125, 200, 255, 0.35)',
-            }}>
-              <svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <div className="figma-admin-card admin-gate-card">
+            <div className="admin-gate-icon">
+              <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                 <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
                 <path d="M7 11V7a5 5 0 0 1 10 0v4" />
               </svg>
             </div>
 
-            <h2 style={{ fontFamily: 'Unbounded, sans-serif', fontSize: 20, color: '#ffffff', marginBottom: 10 }}>
+            <h2 className="admin-gate-title">
               Akses Khusus Admin
             </h2>
-            <p style={{ color: '#c7dde9', fontSize: 14, marginBottom: 20, lineHeight: 1.6 }}>
+            <p className="admin-gate-desc">
               Halaman ini hanya dapat diakses dengan akun email dan password khusus admin. Silakan login terlebih dahulu untuk melanjutkan:
             </p>
 
-            <div style={{
-              background: 'rgba(10, 8, 24, 0.65)',
-              border: '1px solid rgba(125, 200, 255, 0.25)',
-              borderRadius: 14,
-              padding: '14px 18px',
-              marginBottom: 24,
-              textAlign: 'left',
-              fontSize: 13,
-            }}>
-              <div style={{ color: '#9cb8dd', fontWeight: 600, marginBottom: 4 }}>Akun Email Khusus Admin:</div>
-              <div style={{ color: '#ffffff', fontFamily: 'monospace', fontSize: 14 }}>{ADMIN_CREDENTIALS?.email || 'admin@closerz.com'}</div>
+            <div className="admin-gate-credentials">
+              <div className="cred-label">Akun Email Khusus Admin:</div>
+              <div className="cred-val">{ADMIN_CREDENTIALS?.email || 'admin@closerz.com'}</div>
             </div>
 
-            <div style={{ display: 'flex', gap: 12 }}>
+            <div className="admin-gate-actions">
               <button
                 type="button"
-                className="figma-admin-btn-cancel"
+                className="figma-admin-btn-secondary"
                 onClick={handleReturnToWebsite}
-                style={{ flex: 1, height: 46, borderRadius: 12 }}
               >
                 Kembali
               </button>
@@ -312,7 +289,6 @@ export default function FigmaAdmin() {
                 type="button"
                 className="figma-admin-btn-primary"
                 onClick={() => navigate('/login-figma')}
-                style={{ flex: 1.4, height: 46, borderRadius: 12 }}
               >
                 Ke Halaman Login
               </button>
@@ -330,11 +306,9 @@ export default function FigmaAdmin() {
         <div className="figma-admin-header-inner">
           <div className="figma-admin-brand">
             <Link to="/landing" className="figma-admin-logo">
-              <span className="logo-g">G</span>
-              <span className="logo-star">★</span>
-              <span className="logo-closerz">Closerz</span>
+              <span className="logo-brand">Closerz</span>
+              <span className="logo-panel-tag">Admin</span>
             </Link>
-            <span className="figma-admin-badge">Admin Dashboard</span>
           </div>
 
           <div className="figma-admin-nav-actions">
@@ -361,22 +335,22 @@ export default function FigmaAdmin() {
 
       {/* ── MAIN CONTENT ── */}
       <main className="figma-admin-container">
-        {/* Banner Ringkasan */}
+        {/* Header Ringkasan Halaman */}
         <section className="figma-admin-summary">
-          <div>
-            <h1 className="figma-admin-title">Kelola Urutan, Grup, Status & Slot</h1>
+          <div className="summary-text-block">
+            <h1 className="figma-admin-title">Katalog & Manajemen Photocard</h1>
             <p className="figma-admin-subtitle">
-              Hold & geser kartu naik atau turun untuk mengatur urutan tampilan di katalog depan. Gunakan tombol Edit untuk mengatur status (Ready Stock / Pre-Order) dan kuota slot kartu.
+              Kelola grup, urutan posisi kartu, status ketersediaan, serta jumlah kuota slot photocard.
             </p>
           </div>
           <div className="figma-admin-stats">
-            <div className="stat-card">
-              <div className="stat-val">{groups.length}</div>
-              <div className="stat-label">Total Grup</div>
+            <div className="stat-pill">
+              <span className="stat-val">{groups.length}</span>
+              <span className="stat-label">Grup Aktif</span>
             </div>
-            <div className="stat-card">
-              <div className="stat-val">{catalogCards.length}</div>
-              <div className="stat-label">Total Photocard</div>
+            <div className="stat-pill">
+              <span className="stat-val">{catalogCards.length}</span>
+              <span className="stat-label">Total Photocard</span>
             </div>
           </div>
         </section>
@@ -386,7 +360,7 @@ export default function FigmaAdmin() {
           <div className="figma-admin-forms-col">
             {/* 1. Form Tambah Grup Baru */}
             <div className="figma-admin-panel">
-              <h2 className="panel-title">1. Tambah Grup Baru</h2>
+              <h2 className="panel-title">Tambah Grup</h2>
               <p className="panel-desc">
                 Tambahkan grup baru (misal: RIIZE, TXT, SEVENTEEN). Tab tombol filter akan otomatis bertambah di katalog depan.
               </p>
@@ -416,7 +390,7 @@ export default function FigmaAdmin() {
                 </div>
 
                 <button type="submit" className="figma-admin-submit-btn">
-                  + Tambah Grup
+                  Tambah Grup
                 </button>
               </form>
 
@@ -451,7 +425,7 @@ export default function FigmaAdmin() {
 
             {/* 2. Form Tambah Photocard Baru dengan Panel Penentuan Status */}
             <div className="figma-admin-panel">
-              <h2 className="panel-title">2. Tambah Photocard Baru</h2>
+              <h2 className="panel-title">Tambah Photocard</h2>
               <p className="panel-desc">
                 Pilih grup dan tentukan status kartu: <strong>Ready Stock</strong> (dengan sisa slot) atau <strong>Pre-Order</strong>.
               </p>
@@ -471,7 +445,7 @@ export default function FigmaAdmin() {
                         checked={cardStatus === 'Ready Stock'}
                         onChange={(e) => setCardStatus(e.target.value)}
                       />
-                      <span>● Ready Stock</span>
+                      <span>Ready Stock</span>
                     </label>
 
                     <label
@@ -484,7 +458,7 @@ export default function FigmaAdmin() {
                         checked={cardStatus === 'Pre-Order'}
                         onChange={(e) => setCardStatus(e.target.value)}
                       />
-                      <span>★ Pre-Order</span>
+                      <span>Pre-Order</span>
                     </label>
                   </div>
                   <div className="status-helper-text">
@@ -591,7 +565,7 @@ export default function FigmaAdmin() {
                 </div>
 
                 <button type="submit" className="figma-admin-submit-btn">
-                  + Simpan Photocard
+                  Simpan Photocard
                 </button>
               </form>
             </div>
@@ -602,9 +576,9 @@ export default function FigmaAdmin() {
             <div className="figma-admin-panel">
               <div className="panel-header-actions">
                 <div>
-                  <h2 className="panel-title">3. Urutan Posisi & Manajemen Photocard ({catalogCards.length})</h2>
+                  <h2 className="panel-title">Daftar Photocard ({catalogCards.length})</h2>
                   <p className="panel-desc">
-                    <strong>Hold & geser (drag & drop)</strong> kartu naik atau turun untuk mengubah urutan tampilan di katalog website. Klik tombol <strong>Edit</strong> untuk mengubah status atau kuota slot kartu.
+                    Geser kartu atau gunakan tombol panah untuk mengubah urutan di katalog. Klik <strong>Edit</strong> untuk mengubah status stok dan kuota slot.
                   </p>
                 </div>
                 <button
@@ -617,7 +591,7 @@ export default function FigmaAdmin() {
                   }}
                   title="Kembalikan data ke awal default CYE"
                 >
-                  Reset ke Default CYE
+                  Reset Default CYE
                 </button>
               </div>
 
@@ -783,14 +757,14 @@ export default function FigmaAdmin() {
                     className={`edit-status-btn ${editStatus === 'Ready Stock' ? 'is-active is-ready' : ''}`}
                     onClick={() => setEditStatus('Ready Stock')}
                   >
-                    ● Ready Stock (Slot Terbatas)
+                    Ready Stock (Slot Terbatas)
                   </button>
                   <button
                     type="button"
                     className={`edit-status-btn ${editStatus === 'Pre-Order' ? 'is-active is-po' : ''}`}
                     onClick={() => setEditStatus('Pre-Order')}
                   >
-                    ★ Pre-Order (Slot Tak Terbatas)
+                    Pre-Order (Slot Fleksibel)
                   </button>
                 </div>
                 <div className="edit-status-desc">
